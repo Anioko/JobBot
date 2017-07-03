@@ -1,0 +1,408 @@
+1499032708281	geckodriver	INFO	Listening on 127.0.0.1:51978
+1499032710345	mozprofile::profile	INFO	Using profile path C:\Users\arash\AppData\Local\Temp\rust_mozprofile.VI3jheRLhKfa
+1499032710348	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args []
+1499032710354	geckodriver::marionette	INFO	Connecting to Marionette on localhost:51985
+1499032713798	Marionette	INFO	Listening on port 51985
+1499032713976	Marionette	WARN	TLS certificate errors will be ignored for this session
+*************************
+A coding exception was thrown and uncaught in a Task.
+
+Full message: TypeError: NetworkError when attempting to fetch resource.
+Full stack: 
+*************************
+[GPU 9372] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+IPDL protocol error: Handler returned error code!
+
+###!!! [Parent][DispatchAsyncMessage] Error: PLayerTransaction::Msg_ReleaseLayer Processing error: message was deseri[GPU 9376] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 9176] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+O	Listening on port 52333
+1499033607647	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript error: resource://gre/modules/LoginManagerParent.jsm, line 75: TypeError: this._recipeManager is null
+console.warn: nsLoginManager: searchLogins: `formSubmitURL` or `httpRealm` is recommended
+JavaScript error: resource://gre/modules/LoginManagerParent.jsm, line 75: TypeError: this._recipeManager is null
+console.warn: nsLoginManager: searchLogins: `formSubmitURL` or `httpRealm` is recommended
+[GPU 5436] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[GPU 5436] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+NFO	Listening on port 52460
+[GPU 2792] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499034047606	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 2792] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499034126367	geckodriver	INFO	Listening on 127.0.0.1:52523
+1499034128436	mozprofile::profile	INFO	Using profile path C:\Users\arash\AppData\Local\Temp\rust_mozprofile.AYZV2MwIioeY
+1499034128438	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args []
+1499034128441	geckodriver::marionette	INFO	Connecting to Marionette on localhost:52529
+1499034130776	Marionette	INFO	Listening on port 52529
+1499034131587	Marionette	WARN	TLS certificate errors will be ignored for this session
+[Child 1636] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 1636] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[GPU 6968] WARNING: pipe error: 109: file c:/builds/moz2_s1499034171539	Marionette	INFO	Listening on port 52570
+[GPU 6228] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499034172076	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 6228] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+iles (x86)\Mozilla Firefox\firefox.exe with args []
+1499034324681	geckodriver::marionette	INFO	Connecting to Marionette on localhost:52634
+1499034327010	Marionette	INFO	Listening on port 52634
+[GPU 6532] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499034327801	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 6532] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499034493781	geckodriver	INFO	Listening on 127.0.0.1:52710
+1499034495872	mozprofile::profile	INFO	Using profile path C:\Users\arash\AppData\Local\Temp\rust_mozprofile.WoQVR4iWtgw6
+1499034495877	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args []
+1499034495881	geckodriver::marionette	INFO	Connecting to Marionette on localhost:52716
+[GPU 3944] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499034498303	Marionette	INFO	Listening on port 52716
+1499034499018	Marionette	WARN	TLS certificate errors will be ignored for this session
+[Child 11492] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 11492] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499034660051	geckodriver	INFO	Listening on 127.0.0.1:52761
+1499034662135	mozprofile::profile	INFO	Using profile path C:\Users\arash\AppData\Local\Temp\rust_mozprofile.LMqg3cKZ64WK
+1499034662138	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args []
+1499034662142	geckodriver::marionette	INFO	Connecting to Marionette on localhost:52767
+[GPU 7016] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499034664492	Marionette	INFO	Listening on port 52767
+1499034665274	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 7016] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 12088] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 12088] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499034959350	geckodriver	INFO	Listening on 127.0.0.1:52875
+1499034961419	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499034963945	Marionette	INFO	Listening on port 52881
+1499034964562	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499034980688	geckodriver	INFO	Listening on 127.0.0.1:52916
+1499034982762	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499034985220	Marionette	INFO	Listening on port 52922
+1499034985887	Marionette	WARN	TLS certificate errors will be ignored for this session
+[Child 11936] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 11936] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499035361957	geckodriver	INFO	Listening on 127.0.0.1:53139
+1499035364037	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+[GPU 2840] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499035366400	Marionette	INFO	Listening on port 53145
+1499035367155	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 2840] WARNING: pipe error: 109: file c:/builds/moz2_sla1499035383213	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+[GPU 7240] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499035385724	Marionette	INFO	Listening on port 53173
+1499035386348	Marionette	WARN	TLS certificate errors will be ignored for this session
+[Child 5176] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 5176] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499044795051	geckodriver	INFO	Listening on 127.0.0.1:54529
+1499044797152	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499044800218	Marionette	INFO	Listening on port 54535
+1499044800301	Marionette	WARN	TLS certificate errors will be ignored for this session
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499044866375	geckodriver	INFO	Listening on 127.0.0.1:54559
+1499044868444	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499044871542	Marionette	INFO	Listening on port 54565
+[GPU 8356] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499044871559	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499045175932	geckodriver	INFO	Listening on 127.0.0.1:54680
+1499045178027	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499045180525	Marionette	INFO	Listening on port 54686
+1499045181156	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499045211918	geckodriver	INFO	Listening on 127.0.0.1:54728
+1499045213980	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499045216429	Marionette	INFO	Listening on port 54734
+[GPU 7044] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499045217107	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499046180244	geckodriver	INFO	Listening on 127.0.0.1:54992
+1499046182323	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499046185174	Marionette	INFO	Listening on port 54998
+[GPU 5608] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499046185470	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499046305213	geckodriver	INFO	Listening on 127.0.0.1:55054
+1499046307311	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499046312615	Marionette	INFO	Listening on port 55060
+[GPU 3816] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499046313076	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499046337041	geckodriver	INFO	Listening on 127.0.0.1:55114
+1499046339088	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499046341704	Marionette	INFO	Listening on port 55120
+1499046342221	Marionette	WARN	TLS certificate errors will be ignored for this session
+IPDL protocol error: Handler returned error code!
+
+###!!! [Parent][DispatchAsyncMessage] Error: PAPZCTreeManager::Msg_SetTargetAPZC Processing error: message was deserialized, but the handler returned false (indicating failure)
+
+[GPU 7720] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+IPDL protocol error: Handler returned error code!
+
+###!!! [Parent][DispatchAsyncMessage] Error: PAPZCTreeManager::Msg_SetTargetAPZC Processing error: message was deserialized, but the handler returned false (indicating failure)
+
+IPDL protocol error: Handler returned error code!
+
+###!!! [Parent][DispatchAsyncMessage] Error: PAPZCTreeManager::Msg_SetTargetAPZC Processing error: message was deserialized, but the handler returned false (indicating failure)
+
+1499046607466	geckodriver	INFO	Listening on 127.0.0.1:55200
+1499046609530	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+[GPU 8368] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499046611876	Marionette	INFO	Listening on port 55206
+1499046612662	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499046848735	geckodriver	INFO	Listening on 127.0.0.1:55273
+1499046850805	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499046853336	Marionette	INFO	Listening on port 55279
+1499046853939	Marionette	WARN	TLS certificate errors will be ignored for this session
+*************************
+A coding exception was thrown and uncaught in a Task.
+
+Full message: TypeError: NetworkError when attempting to fetch resource.
+Full stack: 
+*************************
+1499055331315	geckodriver	INFO	Listening on 127.0.0.1:56256
+1499055333391	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499055335827	Marionette	INFO	Listening on port 56262
+[GPU 10124] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499055336532	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499055864377	geckodriver	INFO	Listening on 127.0.0.1:56374
+1499055866443	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499055868848	Marionette	INFO	Listening on port 56380
+1499055869566	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499055945010	geckodriver	INFO	Listening on 127.0.0.1:56428
+1499055947103	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499055949671	Marionette	INFO	Listening on port 56434
+1499055950261	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499056117049	geckodriver	INFO	Listening on 127.0.0.1:56519
+1499056119140	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499056121920	Marionette	INFO	Listening on port 56525
+1499056122277	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499056153040	geckodriver	INFO	Listening on 127.0.0.1:56574
+1499056155113	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499056157469	Marionette	INFO	Listening on port 56580
+1499056158230	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 3552] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[GPU 3552] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499056302627	geckodriver	INFO	Listening on 127.0.0.1:56627
+1499056304706	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+[GPU 12272] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499056307162	Marionette	INFO	Listening on port 56633
+1499056307842	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499056636610	geckodriver	INFO	Listening on 127.0.0.1:56690
+1499056638692	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+[GPU 2068] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499056641255	Marionette	INFO	Listening on port 56696
+1499056641829	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499056665557	geckodriver	INFO	Listening on 127.0.0.1:56739
+1499056667656	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499056670204	Marionette	INFO	Listening on port 56746
+[GPU 3712] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499056670799	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499056933737	geckodriver	INFO	Listening on 127.0.0.1:56884
+1499056935804	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+[GPU 10480] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499056938355	Marionette	INFO	Listening on port 56890
+1499056938940	Marionette	WARN	TLS certificate errors will be ignored for this session
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+arionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499057145926	Marionette	INFO	Listening on port 56981
+1499057146394	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499057182469	geckodriver	INFO	Listening on 127.0.0.1:57027
+1499057184568	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+[GPU 7124] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499057186950	Marionette	INFO	Listening on port 57033
+1499057187703	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499057246991	geckodriver	INFO	Listening on 127.0.0.1:57074
+1499057249064	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499057251577	Marionette	INFO	Listening on port 57080
+[GPU 3768] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499057252198	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 3768] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499057301267	geckodriver	INFO	Listening on 127.0.0.1:57127
+1499057303338	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499057305760	Marionette	INFO	Listening on port 57133
+1499057306457	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 5288] WARNING: pipe error: 109: file c:/builds/moz2_sla1499057471640	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+[GPU 12084] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499057474003	Marionette	INFO	Listening on port 57206
+1499057474801	Marionette	WARN	TLS certificate errors will be ignored for this session
+!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499057940368	geckodriver	INFO	Listening on 127.0.0.1:57281
+1499057942465	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+[GPU 8704] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499057944839	Marionette	INFO	Listening on port 57287
+1499057945665	Marionette	WARN	TLS certificate errors will be ignored for this session
+[Child 3232] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+lave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499058216275	Marionette	INFO	Listening on port 57362
+1499058217062	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 7280] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 8256] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 8256] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499058289102	geckodriver	INFO	Listening on 127.0.0.1:57459
+1499058291224	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499058293663	Marionette	INFO	Listening on port 57465
+[GPU 1828] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499058294360	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499058326707	geckodriver	INFO	Listening on 127.0.0.1:57507
+1499058328783	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499058331529	Marionette	INFO	Listening on port 57513
+[GPU 1660] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499058331917	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499058871214	geckodriver	INFO	Listening on 127.0.0.1:57854
+1499058873280	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499058875765	Marionette	INFO	Listening on port 57862
+[GPU 4376] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499058876439	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499059312648	geckodriver	INFO	Listening on 127.0.0.1:58567
+1499059314748	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499059320272	Marionette	INFO	Listening on port 58575
+[GPU 3556] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499059320498	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 3556] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 10196] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499059551675	geckodriver	INFO	Listening on 127.0.0.1:59041
+1499059553738	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499059556262	Marionette	INFO	Listening on port 59051
+1499059556883	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499059844601	geckodriver	INFO	Listening on 127.0.0.1:59516
+1499059846698	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499059849436	Marionette	INFO	Listening on port 59526
+1499059849836	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 10888] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 11808] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499060062657	geckodriver	INFO	Listening on 127.0.0.1:59925
+1499060064722	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499060069101	geckodriver	INFO	Listening on 127.0.0.1:59952
+1499060071171	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+[GPU 6932] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499060073704	Marionette	INFO	Listening on port 59962
+1499060074305	Marionette	WARN	TLS certificate errors will be ignored for this session
+[Child 11356] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 11356] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+#[GPU 3360] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 3680] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499060117722	geckodriver	INFO	Listening on 127.0.0.1:60122
+1499060119802	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499060122466	Marionette	INFO	Listening on port 60130
+[GPU 1968] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499060122934	Marionette	WARN	TLS certificate errors will be ignored for this session
+[Child 8160] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChanne[GPU 4164] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499060148546	Marionette	INFO	Listening on port 60221
+1499060148932	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499060182987	geckodriver	INFO	Listening on 127.0.0.1:60313
+1499060185048	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499060187600	Marionette	INFO	Listening on port 60323
+[GPU 168] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499060188180	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499060434305	geckodriver	INFO	Listening on 127.0.0.1:60715
+1499060436409	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499060439003	Marionette	INFO	Listening on port 60723
+[GPU 852] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499060439535	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499060466355	geckodriver	INFO	Listening on 127.0.0.1:60807
+1499060468435	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+[GPU 8728] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499060470883	Marionette	INFO	Listening on port 60815
+1499060471569	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 8728] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 5372] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[Child 5372] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499060596640	geckodriver	INFO	Listening on 127.0.0.1:61040
+1499060598743	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499060601366	Marionette	INFO	Listening on port 61048
+1499060601864	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499060621789	geckodriver	INFO	Listening on 127.0.0.1:61120
+1499060623884	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499060626358	Marionette	INFO	Listening on port 61130
+1499060627004	Marionette	WARN	TLS certificate errors will be ignored for this session
+[Child 6024] WARNING: pipe error: 232: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 513
+1499060681977	geckodriver	INFO	Listening on 127.0.0.1:61248
+1499060684015	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499060686536	Marionette	INFO	Listening on port 61258
+[GPU 9412] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499060687136	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 9412] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+[GPU 9412] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499061067319	geckodriver	INFO	Listening on 127.0.0.1:61826
+1499061069416	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499061071921	Marionette	INFO	Listening on port 61834
+1499061072536	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499061104423	geckodriver	INFO	Listening on 127.0.0.1:61927
+1499061106501	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499061108985	Marionette	INFO	Listening on port 61935
+[GPU 7488] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499061109616	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499061154810	geckodriver	INFO	Listening on 127.0.0.1:62042
+1499061156895	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499061159378	Marionette	INFO	Listening on port 62050
+1499061160034	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499063203797	geckodriver	INFO	Listening on 127.0.0.1:65071
+1499063205866	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499063209074	Marionette	INFO	Listening on port 65081
+1499063209593	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499064449438	geckodriver	INFO	Listening on 127.0.0.1:49863
+1499064451530	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499064454903	Marionette	INFO	Listening on port 49869
+1499064455188	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499064466230	geckodriver	INFO	Listening on 127.0.0.1:49907
+1499064468284	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499064471326	Marionette	INFO	Listening on port 49913
+1499064471407	Marionette	WARN	TLS certificate errors will be ignored for this session
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+arionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499064500121	Marionette	INFO	Listening on port 49954
+1499064500594	Marionette	WARN	TLS certificate errors will be ignored for this session
+[GPU 5016] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1499064556541	geckodriver	INFO	Listening on 127.0.0.1:50009
+1499064558623	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499064561587	Marionette	INFO	Listening on port 50015
+[GPU 568] WARNING: pipe error: 109: file c:/builds/moz2_slave/m-rel-w32-00000000000000000000/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+1499064561745	Marionette	WARN	TLS certificate errors will be ignored for this session
