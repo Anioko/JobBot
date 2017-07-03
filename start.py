@@ -1,8 +1,11 @@
 from selenium import webdriver
 from constants import Const
+from userconfig import UserConfig
 from bs4 import BeautifulSoup
 from urllib.parse import urlencode
+import peewee
 import time
+from jobdatabase import Job, databaseSetup
 
 class BotConfig(Const):
     DELTA_RAND = .100
@@ -66,12 +69,17 @@ class IndeedBot(object):
                 # TODO: Store these values
                 jobTitle = jobTitleSoup.text.strip('\n')
                 jobId = jobTag['id']
-
+                try:
+                    j = Job.create(link_id = jobId, link = jobLink, title = jobTitle, easy_apply = True)
+                    j.save
+                except peewee.IntegrityError:
+                    print("{0} with id: {1}\tAlready in job table ".format(jobTitle, jobId))
 
     def shutDown(self):
         self.driver.close()
 
+databaseSetup()
 bot = IndeedBot()
-bot.login()
+#bot.login()
 bot.search_jobs()
 bot.shutDown()
