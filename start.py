@@ -95,8 +95,7 @@ class IndeedBot(object):
                 jobTitle = jobTitleSoup.text.strip('\n')
                 jobId = jobTag['id']
                 try:
-                    j = Job.create(link_id=jobId, link=jobLink, title=jobTitle, easy_apply=True)
-                    j.save
+                    Job.insert(link_id=jobId, link=jobLink, title=jobTitle, easy_apply=True).execute()
                     countNew += 1
                 except peewee.IntegrityError:
                     # print("{0} with id: {1}\tAlready in job table ".format(jobTitle, jobId))
