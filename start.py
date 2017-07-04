@@ -1,14 +1,21 @@
-from selenium import webdriver
-from constants import Const
-from userconfig import UserConfig
-from bs4 import BeautifulSoup
-from urllib.parse import urlencode
-import peewee
 import time
-from jobdatabase import Job, databaseSetup
+from urllib.parse import urlencode
+
+import peewee
+from bs4 import BeautifulSoup
+from selenium import webdriver, common
+
+from constants import Const
+from jobdatabase import Job, databaseSetup, databaseTearDown
+from userconfig import UserConfig
+
 
 class BotConfig(Const):
     DELTA_RAND = .100
+    WAIT_LONG = 5
+    WAIT_MEDIUM = 3
+    WAIT_SHORT = 1
+
 
 class IndeedConfig(Const):
     URL_LOGIN = r'https://secure.indeed.com/account/login?service=my&hl=en_CA&co=CA&continue=https%3A%2F%2Fwww.indeed.ca%2F'
@@ -16,14 +23,15 @@ class IndeedConfig(Const):
     ID_ELEMENT_LOGIN_PASSWORD = r'signin_password'
     URL_BASE = r'https://www.indeed.ca/'
     URL_SEARCH = URL_BASE + r'jobs?'
+
     # Advanced search query
     SEARCH_PARAMETERS = {
-        'as_any' : 'software+developer+engineer',
-        'jt' : 'internship',
-        'limit' : 50,
-        'psf' : 'advsrch',
-        'radius' : 100,
-        'fromage' : 'any'
+        'as_any': 'software+developer+engineer+mechanical+mechatronics+computer+program',
+        'jt': 'internship',
+        'limit': 50,
+        'psf': 'advsrch',
+        'radius': 100,
+        'fromage': 'any'
     }
 
     class DIV_JOB(Const):
@@ -32,6 +40,8 @@ class IndeedConfig(Const):
         EASY_APPLY = 'Easily apply'
         CLASS_SPONSERED = 'sponsoredGray'
 
+    XPATH_NEXT_SPAN = r"//div[contains(@class, 'pagination')]//span[contains(text(), 'Next')]"
+
 
 class IndeedBot(object):
     def __init__(self):
@@ -39,24 +49,40 @@ class IndeedBot(object):
 
     def login(self):
         self.driver.get(IndeedConfig.URL_LOGIN)
-        el_email = self.driver.find_element_by_xpath("//*[@id='{0}']".format(IndeedConfig.ID_ELEMENT_LOGIN_EMAIL))
-        el_password = self.driver.find_element_by_xpath("//*[@id='{0}']".format(IndeedConfig.ID_ELEMENT_LOGIN_PASSWORD))
-        el_email.send_keys(UserConfig.EMAIL)
-        el_password.send_keys(UserConfig.PASSWORD)
-        el_email.submit()
+        elEmail = self.driver.find_element_by_xpath("//*[@id='{0}']".format(IndeedConfig.ID_ELEMENT_LOGIN_EMAIL))
+        elPassword = self.driver.find_element_by_xpath("//*[@id='{0}']".format(IndeedConfig.ID_ELEMENT_LOGIN_PASSWORD))
+        elEmail.send_keys(UserConfig.EMAIL)
+        elPassword.send_keys(UserConfig.PASSWORD)
+        elEmail.submit()
 
-        while(self.driver.current_url != IndeedConfig.URL_BASE):
+        while (self.driver.current_url != IndeedConfig.URL_BASE):
             time.sleep(BotConfig.DELTA_RAND)
 
-    def search_jobs(self):
+    def searchJobs(self):
         # Apparently the difference between %2B and + matters in the search query
-        urlArgs = urlencode(IndeedConfig.SEARCH_PARAMETERS).replace('%2B','+')
+        urlArgs = urlencode(IndeedConfig.SEARCH_PARAMETERS).replace('%2B', '+')
         searchURL = IndeedConfig.URL_SEARCH + urlArgs
         self.driver.get(searchURL)
 
-        soup = BeautifulSoup(self.driver.page_source, 'html.parser')
-        jobResultsSoup = soup.find_all('div', class_=IndeedConfig.DIV_JOB.CLASSES)
+        while True:
+            soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+            jobResultsSoup = soup.find_all('div', class_=IndeedConfig.DIV_JOB.CLASSES)
 
+            self.storeJobs(jobResultsSoup)
+
+            try:
+                elNext = self.driver.find_element_by_xpath(IndeedConfig.XPATH_NEXT_SPAN)
+                elNext.click()
+
+            except common.exceptions.NoSuchElementException:
+                print('Next button not found.\nNo more search results')
+                break
+
+    def storeJobs(self, jobResultsSoup):
+        countNew = 0
+        countSeen = 0
+
+        # Iterated through results and save to database
         for jobTag in jobResultsSoup:
             if IndeedConfig.DIV_JOB.EASY_APPLY in jobTag.text:
                 if len(jobTag.find_all('span', class_=IndeedConfig.DIV_JOB.CLASS_SPONSERED)) != 0:
@@ -66,20 +92,32 @@ class IndeedBot(object):
                     jobTitleSoup = jobTag.find_all('h2', class_=IndeedConfig.DIV_JOB.CLASS_JOB_LINK)[0]
                     jobLink = jobTitleSoup.a['href']
 
-                # TODO: Store these values
                 jobTitle = jobTitleSoup.text.strip('\n')
                 jobId = jobTag['id']
                 try:
-                    j = Job.create(link_id = jobId, link = jobLink, title = jobTitle, easy_apply = True)
+                    j = Job.create(link_id=jobId, link=jobLink, title=jobTitle, easy_apply=True)
                     j.save
+                    countNew += 1
                 except peewee.IntegrityError:
-                    print("{0} with id: {1}\tAlready in job table ".format(jobTitle, jobId))
+                    # print("{0} with id: {1}\tAlready in job table ".format(jobTitle, jobId))
+                    countSeen += 1
+
+        print("{0} new jobs stored\n{1} jobs already stored")
+
+    def applyJobs(self):
+        pass
+
+    def _applySingleJob(selfs):
+        pass
 
     def shutDown(self):
         self.driver.close()
 
+
 databaseSetup()
 bot = IndeedBot()
 #bot.login()
-bot.search_jobs()
+bot.searchJobs()
+bot.applyJobs()
 bot.shutDown()
+databaseTearDown()
