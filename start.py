@@ -1,5 +1,5 @@
+import helpers
 import time
-import random
 from urllib.parse import urlencode
 
 import peewee
@@ -62,37 +62,6 @@ class IndeedBot(object):
         self.driver = webdriver.Firefox()
         self.driver.implicitly_wait(BotConfig.WAIT_IMPLICIT)
 
-    # TODO: Combine as decorator with arguments
-    def _shortWait(func):
-        def wrapper(*args, **kwargs):
-            result = func(*args, **kwargs)
-
-            waitAmount = BotConfig.WAIT_SHORT
-            waitTime = random.uniform(
-                waitAmount - BotConfig.DELTA_RAND,
-                waitAmount + BotConfig.DELTA_RAND
-            )
-            time.sleep(waitTime)
-            return result
-
-        return wrapper
-
-    def _mediumWait(func):
-        def wrapper(*args, **kwargs):
-            result = func(*args, **kwargs)
-
-            waitAmount = BotConfig.WAIT_MEDIUM
-            waitTime = random.uniform(
-                waitAmount - BotConfig.DELTA_RAND,
-                waitAmount + BotConfig.DELTA_RAND
-            )
-            time.sleep(waitTime)
-
-            return result
-
-        return wrapper
-
-    @_shortWait
     def _handlePopup(self):
         try:
             elPopup = self.driver.find_element_by_id(IndeedConfig.ID_POPUP)
@@ -127,7 +96,7 @@ class IndeedBot(object):
             if not nextPageExists:
                 break
 
-    @_mediumWait
+    @helpers.sleepAfterFunction(BotConfig.WAIT_MEDIUM)
     def _nextPage(self):
         nextPageExists = False
         try:
@@ -174,7 +143,7 @@ class IndeedBot(object):
             except peewee.DoesNotExist:
                 break
 
-    @_mediumWait
+    @helpers.sleepAfterFunction(BotConfig.WAIT_MEDIUM)
     def _applySingleJob(self, job):
         if (job.easy_apply == True):
             self.driver.get(IndeedConfig.URL_BASE + job.link)
@@ -187,8 +156,8 @@ class IndeedBot(object):
 
 databaseSetup()
 bot = IndeedBot()
-#bot.login()
+# bot.login()
 bot.searchJobs()
-#bot.applyJobs()
+# bot.applyJobs()
 bot.shutDown()
 databaseTearDown()

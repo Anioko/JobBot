@@ -548,3 +548,7 @@ Full stack:
 1499198353533	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
 1499198356042	Marionette	INFO	Listening on port 54018
 1499198356668	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499199376290	geckodriver	INFO	Listening on 127.0.0.1:54189
+1499199378327	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499199380826	Marionette	INFO	Listening on port 54195
+1499199381466	Marionette	WARN	TLS certificate errors will be ignored for this session
