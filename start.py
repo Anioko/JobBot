@@ -1,4 +1,3 @@
-import helpers
 import time
 from urllib.parse import urlencode
 
@@ -7,6 +6,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver, common
 from selenium.webdriver.common.keys import Keys
 
+import helpers
 from constants import Const
 from jobdatabase import Job, databaseSetup, databaseTearDown
 from userconfig import UserConfig
@@ -14,7 +14,7 @@ from userconfig import UserConfig
 
 class BotConfig(Const):
     WAIT_IMPLICIT = 5
-    DELTA_RAND = .100
+    WAIT_DELTA = .100
     WAIT_LONG = 5
     WAIT_MEDIUM = 3
     WAIT_SHORT = 1
@@ -22,8 +22,8 @@ class BotConfig(Const):
 
 class IndeedConfig(Const):
     URL_LOGIN = r'https://secure.indeed.com/account/login?service=my&hl=en_CA&co=CA&continue=https%3A%2F%2Fwww.indeed.ca%2F'
-    ID_ELEMENT_LOGIN_EMAIL = r'signin_email'
-    ID_ELEMENT_LOGIN_PASSWORD = r'signin_password'
+    ID_INPUT_LOGIN_EMAIL = r'signin_email'
+    ID_INPUT_LOGIN_PASSWORD = r'signin_password'
     URL_BASE = r'https://www.indeed.ca/'
     URL_SEARCH = URL_BASE + r'jobs?'
 
@@ -45,14 +45,15 @@ class IndeedConfig(Const):
         EASY_APPLY = 'Easily apply'
         CLASS_SPONSERED = 'sponsoredGray'
 
-    XPATH_NEXT_SPAN = r"//div[contains(@class, 'pagination')]//span[contains(text(), 'Next')]"
+    XPATH_BUTTON_NEXT_PAGE = r"//div[contains(@class, 'pagination')]//span[contains(text(), 'Next')]"
     ID_POPUP = 'popover-foreground'
 
     # APPLICATION STAGE
-    XPATH_APPLY_SPAN = "r//span[contains(@class, 'indeed-apply-button-label')]"
+    XPATH_APPLY_SPAN = r"//span[contains(@class, 'indeed-apply-button-label')]"
     ID_INPUT_APPLICANT_NAME = 'applicant.name'
     ID_INPUT_APPLICANT_EMAIL = 'applicant.email'
     ID_INPUT_APPLICANT_PHONE = 'applicant.phoneNumber'
+    XPATH_LABEL_COMPANY_NAME = r"//span[contains(@class,'jobcompany')]"
     ID_BUTTON_RESUME = 'resume'
     ID_INPUT_COVER_LETTER = 'applicant.applicationMessage'
 
@@ -64,21 +65,21 @@ class IndeedBot(object):
 
     def _handlePopup(self):
         try:
-            elPopup = self.driver.find_element_by_id(IndeedConfig.ID_POPUP)
+            # Just to ensure that there is a popup
+            self.driver.find_element_by_id(IndeedConfig.ID_POPUP)
             webdriver.ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
         except common.exceptions.NoSuchElementException:
             pass
 
     def login(self):
         self.driver.get(IndeedConfig.URL_LOGIN)
-        elEmail = self.driver.find_element_by_xpath("//*[@id='{0}']".format(IndeedConfig.ID_ELEMENT_LOGIN_EMAIL))
-        elPassword = self.driver.find_element_by_xpath("//*[@id='{0}']".format(IndeedConfig.ID_ELEMENT_LOGIN_PASSWORD))
+        elEmail = self.driver.find_element_by_id(IndeedConfig.ID_INPUT_LOGIN_EMAIL)
         elEmail.send_keys(UserConfig.EMAIL)
-        elPassword.send_keys(UserConfig.PASSWORD)
+        self.driver.find_element_by_id(IndeedConfig.ID_INPUT_LOGIN_PASSWORD).send_keys(UserConfig.PASSWORD)
         elEmail.submit()
 
         while (self.driver.current_url != IndeedConfig.URL_BASE):
-            time.sleep(BotConfig.DELTA_RAND)
+            time.sleep(BotConfig.WAIT_DELTA)
 
     def searchJobs(self):
         # Apparently the difference between %2B and + matters in the search query
@@ -100,8 +101,7 @@ class IndeedBot(object):
     def _nextPage(self):
         nextPageExists = False
         try:
-            elNext = self.driver.find_element_by_xpath(IndeedConfig.XPATH_NEXT_SPAN)
-            elNext.click()
+            self.driver.find_element_by_xpath(IndeedConfig.XPATH_BUTTON_NEXT_PAGE).click()
             # Right after pressing next a popup alert usually happens
             self._handlePopup()
             return True
@@ -140,15 +140,49 @@ class IndeedBot(object):
             try:
                 j = Job.get(Job.applied == False)
                 self._applySingleJob(j)
+
             except peewee.DoesNotExist:
                 break
 
     @helpers.sleepAfterFunction(BotConfig.WAIT_MEDIUM)
     def _applySingleJob(self, job):
+        def clearAndFill(el, text):
+            el.clear()
+            el.send_keys(text)
+
         if (job.easy_apply == True):
             self.driver.get(IndeedConfig.URL_BASE + job.link)
             elApply = self.driver.find_element_by_xpath(IndeedConfig.XPATH_APPLY_SPAN)
             elApply.click()
+
+            # Fill out application
+            try:
+                # TODO: Find better way to do this!
+                # Switch to application form IFRAME, notice that it is a nested IFRAME
+                self.driver.switch_to.frame(1)
+                self.driver.switch_to.frame(0)
+
+                clearAndFill(self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_NAME), UserConfig.NAME)
+                clearAndFill(self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_EMAIL), UserConfig.EMAIL)
+                clearAndFill(self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_PHONE), UserConfig.PHONE)
+                elResume = self.driver.find_element_by_id(IndeedConfig.ID_BUTTON_RESUME)
+                elResume.send_keys(UserConfig.PATH_SOFTWARE_RESUME)
+                companyName = self.driver.find_element_by_xpath(IndeedConfig.XPATH_LABEL_COMPANY_NAME).text
+                clearAndFill(
+                    self.driver.find_element_by_id(IndeedConfig.ID_INPUT_COVER_LETTER),
+                    UserConfig.calculateCoverLetter(companyName)
+                )
+                # TODO: Press apply!
+                job.applied = True
+
+            except common.exceptions.NoSuchFrameException as e:
+                job.error = str(e)
+
+            except common.exceptions.NoSuchElementException as e:
+                job.error = str(e)
+
+            finally:
+                job.save()
 
     def shutDown(self):
         self.driver.close()
@@ -157,7 +191,7 @@ class IndeedBot(object):
 databaseSetup()
 bot = IndeedBot()
 # bot.login()
-bot.searchJobs()
-# bot.applyJobs()
+# bot.searchJobs()
+bot.applyJobs()
 bot.shutDown()
 databaseTearDown()

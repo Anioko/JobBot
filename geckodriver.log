@@ -552,3 +552,160 @@ Full stack:
 1499199378327	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
 1499199380826	Marionette	INFO	Listening on port 54195
 1499199381466	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499203052351	geckodriver	INFO	Listening on 127.0.0.1:54843
+1499203054471	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499203057770	Marionette	INFO	Listening on port 54849
+1499203058111	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499203414057	Marionette	INFO	Ceased listening
+0.0.1:55190
+1499203412011	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499203415148	Marionette	INFO	Listening on port 55200
+1499203415635	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499203466179	Marionette	INFO	Ceased listening
+0.0.1:55315
+1499203467156	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499203470251	Marionette	INFO	Listening on port 55325
+1499203470480	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499203604146	Marionette	INFO	Ceased listening
+0.0.1:55468
+1499203531980	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499203535009	Marionette	INFO	Listening on port 55479
+1499203535189	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499203601126	geckodriver	INFO	Listening on 127.0.0.1:55647
+1499203603178	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499203605596	Marionette	INFO	Listening on port 55655
+1499203606319	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499203652870	Marionette	INFO	Ceased listening
+1499203658934	geckodriver	INFO	Listening on 127.0.0.1:55777
+1499203660995	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499203663517	Marionette	INFO	Listening on port 55785
+1499203664113	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499203688508	geckodriver	INFO	Listening on 127.0.0.1:55870
+1499203690593	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499203693361	Marionette	INFO	Listening on port 55878
+1499203693754	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript error: resource://gre/modules/LoginManagerParent.jsm, line 104: TypeError: this._recipeManager is null
+JavaScript error: resource://gre/modules/LoginManagerParent.jsm, line 104: TypeError: this._recipeManager is null
+JavaScript error: resource://gre/modules/LoginManagerParent.jsm, line 104: TypeError: this._recipeManager is null
+JavaScript error: resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/highlighters/box-model.js, line 403: TypeError: quads is undefined
+JavaScript error: resource://gre/modules/LoginManagerParent.jsm, line 104: TypeError: this._recipeManager is null
+JavaScript error: resource://gre/modules/LoginManagerParent.jsm, line 104: TypeError: this._recipeManager is null
+JavaScript error: chrome://browser/content/pageinfo/permissions.js, line 218: Error: Callback received for bad URI: [xpconnect wrapped nsIURI]
+1499204209281	geckodriver	INFO	Listening on 127.0.0.1:56718
+1499204211344	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499204213761	Marionette	INFO	Listening on port 56726
+1499204214481	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499204319782	geckodriver	INFO	Listening on 127.0.0.1:56932
+1499204321852	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499204324396	Marionette	INFO	Listening on port 56940
+1499204324979	Marionette	WARN	TLS certificate errors will be ignored for this session
+Warning: An attempt was made to write to the DEVTOOLS_COPY_FULL_CSS_SELECTOR_OPENED_COUNT histogram, which is not defined in Histograms.json
+*************************
+A coding exception was thrown and uncaught in a Task.
+
+Full message: TypeError: NetworkError when attempting to fetch resource.
+Full stack: 
+*************************
+JavaScript error: resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/highlighters/box-model.js, line 403: TypeError: quads is undefined
+JavaScript error: resource://gre/modules/LoginManagerParent.jsm, line 104: TypeError: this._recipeManager is null
+1499205376899	geckodriver	INFO	Listening on 127.0.0.1:58646
+1499205378976	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499205381490	Marionette	INFO	Listening on port 58657
+1499205382128	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499205465438	geckodriver	INFO	Listening on 127.0.0.1:58822
+1499205467531	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499205470094	Marionette	INFO	Listening on port 58830
+1499205470674	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499205522815	geckodriver	INFO	Listening on 127.0.0.1:58950
+1499205524882	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499205527429	Marionette	INFO	Listening on port 58958
+1499205528024	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499206149123	geckodriver	INFO	Listening on 127.0.0.1:59509
+1499206151175	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499206153725	Marionette	INFO	Listening on port 59515
+1499206154323	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499206181535	geckodriver	INFO	Listening on 127.0.0.1:59563
+1499206183602	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499206186128	Marionette	INFO	Listening on port 59569
+1499206186724	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499206391398	geckodriver	INFO	Listening on 127.0.0.1:59660
+1499206393480	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499206395897	Marionette	INFO	Listening on port 59666
+1499206396620	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499206576151	geckodriver	INFO	Listening on 127.0.0.1:59743
+1499206578224	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499206580574	Marionette	INFO	Listening on port 59750
+1499206581346	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499206719860	geckodriver	INFO	Listening on 127.0.0.1:59927
+1499206721939	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499206724397	Marionette	INFO	Listening on port 59933
+1499206725059	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499207303184	geckodriver	INFO	Listening on 127.0.0.1:60774
+1499207305255	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499207307828	Marionette	INFO	Listening on port 60784
+1499207308381	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499207369181	Marionette	INFO	Ceased listening
+0.0.1:60923
+1499207368902	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499207371314	Marionette	INFO	Listening on port 60938
+1499207372041	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499207674316	Marionette	INFO	Ceased listening
+0.0.1:61469
+1499207674970	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499207677671	Marionette	INFO	Listening on port 61480
+1499207678086	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499207815744	geckodriver	INFO	Listening on 127.0.0.1:61768
+1499207817811	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499207820243	Marionette	INFO	Listening on port 61776
+1499207820947	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499207857430	geckodriver	INFO	Listening on 127.0.0.1:61893
+1499207859479	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499207862384	Marionette	INFO	Listening on port 61901
+1499207862602	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499208302265	geckodriver	INFO	Listening on 127.0.0.1:59263
+1499208304333	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499208306700	Marionette	INFO	Listening on port 59271
+1499208307449	Marionette	WARN	TLS certificate errors will be ignored for this session
+Handler function DebuggerProgressListener.prototype.onStateChange threw an exception: [Exception... "Component returned failure code: 0x80004002 (NS_NOINTERFACE) [nsIWebProgress.DOMWindow]"  nsresult: "0x80004002 (NS_NOINTERFACE)"  location: "JS frame :: resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js :: _docShellsToWindows/< :: line 723"  data: no]
+Stack: _docShellsToWindows/<@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js:723:11
+_docShellsToWindows@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js:720:12
+_notifyDocShellsUpdate@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js:751:19
+DebuggerProgressListener.prototype.onStateChange<@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js:1637:7
+exports.makeInfallible/<@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/shared/ThreadSafeDevToolsUtils.js:101:14
+Line: 723, column: 0
+console.error: 
+  Handler function DebuggerProgressListener.prototype.onStateChange threw an exception: [Exception... "Component returned failure code: 0x80004002 (NS_NOINTERFACE) [nsIWebProgress.DOMWindow]"  nsresult: "0x80004002 (NS_NOINTERFACE)"  location: "JS frame :: resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js :: _docShellsToWindows/< :: line 723"  data: no]
+Stack: _docShellsToWindows/<@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js:723:11
+_docShellsToWindows@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js:720:12
+_notifyDocShellsUpdate@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js:751:19
+DebuggerProgressListener.prototype.onStateChange<@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js:1637:7
+exports.makeInfallible/<@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/shared/ThreadSafeDevToolsUtils.js:101:14
+Line: 723, column: 0
+Handler function DebuggerProgressListener.prototype.onStateChange threw an exception: [Exception... "Component returned failure code: 0x80004002 (NS_NOINTERFACE) [nsIWebProgress.DOMWindow]"  nsresult: "0x80004002 (NS_NOINTERFACE)"  location: "JS frame :: resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js :: DebuggerProgressListener.prototype.onStateChange< :: line 1640"  data: no]
+Stack: DebuggerProgressListener.prototype.onStateChange<@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js:1640:9
+exports.makeInfallible/<@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/shared/ThreadSafeDevToolsUtils.js:101:14
+Line: 1640, column: 0
+console.error: 
+  Handler function DebuggerProgressListener.prototype.onStateChange threw an exception: [Exception... "Component returned failure code: 0x80004002 (NS_NOINTERFACE) [nsIWebProgress.DOMWindow]"  nsresult: "0x80004002 (NS_NOINTERFACE)"  location: "JS frame :: resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js :: DebuggerProgressListener.prototype.onStateChange< :: line 1640"  data: no]
+Stack: DebuggerProgressListener.prototype.onStateChange<@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/tab.js:1640:9
+exports.makeInfallible/<@resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/shared/ThreadSafeDevToolsUtils.js:101:14
+Line: 1640, column: 0
+*************************
+A coding exception was thrown and uncaught in a Task.
+
+Full message: TypeError: NetworkError when attempting to fetch resource.
+Full stack: 
+*************************
+1499209054940	geckodriver	INFO	Listening on 127.0.0.1:60393
+1499209057001	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499209059401	Marionette	INFO	Listening on port 60401
+1499209060117	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499209100933	geckodriver	INFO	Listening on 127.0.0.1:60521
+1499209103001	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499209105509	Marionette	INFO	Listening on port 60531
+1499209106124	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499209177157	Marionette	INFO	Ceased listening
+0.0.1:60701
+1499209178147	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499209180692	Marionette	INFO	Listening on port 60711
+1499209181277	Marionette	WARN	TLS certificate errors will be ignored for this session
