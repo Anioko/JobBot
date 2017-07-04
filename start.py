@@ -1,9 +1,11 @@
 import time
+import random
 from urllib.parse import urlencode
 
 import peewee
 from bs4 import BeautifulSoup
 from selenium import webdriver, common
+from selenium.webdriver.common.keys import Keys
 
 from constants import Const
 from jobdatabase import Job, databaseSetup, databaseTearDown
@@ -44,6 +46,7 @@ class IndeedConfig(Const):
         CLASS_SPONSERED = 'sponsoredGray'
 
     XPATH_NEXT_SPAN = r"//div[contains(@class, 'pagination')]//span[contains(text(), 'Next')]"
+    ID_POPUP = 'popover-foreground'
 
     # APPLICATION STAGE
     XPATH_APPLY_SPAN = "r//span[contains(@class, 'indeed-apply-button-label')]"
@@ -58,6 +61,44 @@ class IndeedBot(object):
     def __init__(self):
         self.driver = webdriver.Firefox()
         self.driver.implicitly_wait(BotConfig.WAIT_IMPLICIT)
+
+    # TODO: Combine as decorator with arguments
+    def _shortWait(func):
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+
+            waitAmount = BotConfig.WAIT_SHORT
+            waitTime = random.uniform(
+                waitAmount - BotConfig.DELTA_RAND,
+                waitAmount + BotConfig.DELTA_RAND
+            )
+            time.sleep(waitTime)
+            return result
+
+        return wrapper
+
+    def _mediumWait(func):
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+
+            waitAmount = BotConfig.WAIT_MEDIUM
+            waitTime = random.uniform(
+                waitAmount - BotConfig.DELTA_RAND,
+                waitAmount + BotConfig.DELTA_RAND
+            )
+            time.sleep(waitTime)
+
+            return result
+
+        return wrapper
+
+    @_shortWait
+    def _handlePopup(self):
+        try:
+            elPopup = self.driver.find_element_by_id(IndeedConfig.ID_POPUP)
+            webdriver.ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
+        except common.exceptions.NoSuchElementException:
+            pass
 
     def login(self):
         self.driver.get(IndeedConfig.URL_LOGIN)
@@ -82,13 +123,18 @@ class IndeedBot(object):
 
             self.storeJobs(jobResultsSoup)
 
-            if not self._nextPage():
+            nextPageExists = self._nextPage()
+            if not nextPageExists:
                 break
 
+    @_mediumWait
     def _nextPage(self):
+        nextPageExists = False
         try:
             elNext = self.driver.find_element_by_xpath(IndeedConfig.XPATH_NEXT_SPAN)
             elNext.click()
+            # Right after pressing next a popup alert usually happens
+            self._handlePopup()
             return True
 
         except common.exceptions.NoSuchElementException:
@@ -128,13 +174,12 @@ class IndeedBot(object):
             except peewee.DoesNotExist:
                 break
 
+    @_mediumWait
     def _applySingleJob(self, job):
         if (job.easy_apply == True):
             self.driver.get(IndeedConfig.URL_BASE + job.link)
             elApply = self.driver.find_element_by_xpath(IndeedConfig.XPATH_APPLY_SPAN)
             elApply.click()
-
-
 
     def shutDown(self):
         self.driver.close()
@@ -144,6 +189,6 @@ databaseSetup()
 bot = IndeedBot()
 #bot.login()
 bot.searchJobs()
-bot.applyJobs()
+#bot.applyJobs()
 bot.shutDown()
 databaseTearDown()
