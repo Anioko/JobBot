@@ -48,6 +48,9 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+#Pycache
+__pycache__/
+
 # Custom
 userconfig.py
 jobdatabase.db
