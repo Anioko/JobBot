@@ -457,3 +457,18 @@ A coding exception was thrown and uncaught in a Task.
 Full message: TypeError: NetworkError when attempting to fetch resource.
 Full stack: 
 *************************
+1499130105467	Marionette	INFO	Ceased listening
+1499130109675	geckodriver	INFO	Listening on 127.0.0.1:65292
+1499130111767	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499130114513	Marionette	INFO	Listening on port 65302
+1499130114898	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript error: resource://gre/modules/commonjs/toolkit/loader.js -> resource://devtools/server/actors/highlighters/box-model.js, line 403: TypeError: quads is undefined
+JavaScript error: resource://gre/modules/LoginManagerParent.jsm, line 104: TypeError: this._recipeManager is null
+JavaScript error: resource://gre/modules/LoginManagerParent.jsm, line 104: TypeError: this._recipeManager is null
+JavaScript error: resource://gre/modules/LoginManagerParent.jsm, line 104: TypeError: this._recipeManager is null
+*************************
+A coding exception was thrown and uncaught in a Task.
+
+Full message: TypeError: NetworkError when attempting to fetch resource.
+Full stack: 
+*************************

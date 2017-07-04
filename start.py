@@ -11,6 +11,7 @@ from userconfig import UserConfig
 
 
 class BotConfig(Const):
+    WAIT_IMPLICIT = 5
     DELTA_RAND = .100
     WAIT_LONG = 5
     WAIT_MEDIUM = 3
@@ -23,6 +24,8 @@ class IndeedConfig(Const):
     ID_ELEMENT_LOGIN_PASSWORD = r'signin_password'
     URL_BASE = r'https://www.indeed.ca/'
     URL_SEARCH = URL_BASE + r'jobs?'
+
+    # SEARCH STAGE
 
     # Advanced search query
     SEARCH_PARAMETERS = {
@@ -42,10 +45,19 @@ class IndeedConfig(Const):
 
     XPATH_NEXT_SPAN = r"//div[contains(@class, 'pagination')]//span[contains(text(), 'Next')]"
 
+    # APPLICATION STAGE
+    XPATH_APPLY_SPAN = "r//span[contains(@class, 'indeed-apply-button-label')]"
+    ID_INPUT_APPLICANT_NAME = 'applicant.name'
+    ID_INPUT_APPLICANT_EMAIL = 'applicant.email'
+    ID_INPUT_APPLICANT_PHONE = 'applicant.phoneNumber'
+    ID_BUTTON_RESUME = 'resume'
+    ID_INPUT_COVER_LETTER = 'applicant.applicationMessage'
+
 
 class IndeedBot(object):
     def __init__(self):
         self.driver = webdriver.Firefox()
+        self.driver.implicitly_wait(BotConfig.WAIT_IMPLICIT)
 
     def login(self):
         self.driver.get(IndeedConfig.URL_LOGIN)
@@ -70,13 +82,18 @@ class IndeedBot(object):
 
             self.storeJobs(jobResultsSoup)
 
-            try:
-                elNext = self.driver.find_element_by_xpath(IndeedConfig.XPATH_NEXT_SPAN)
-                elNext.click()
-
-            except common.exceptions.NoSuchElementException:
-                print('Next button not found.\nNo more search results')
+            if not self._nextPage():
                 break
+
+    def _nextPage(self):
+        try:
+            elNext = self.driver.find_element_by_xpath(IndeedConfig.XPATH_NEXT_SPAN)
+            elNext.click()
+            return True
+
+        except common.exceptions.NoSuchElementException:
+            print('Next button not found.\nNo more search results')
+            return False
 
     def storeJobs(self, jobResultsSoup):
         countNew = 0
@@ -101,13 +118,23 @@ class IndeedBot(object):
                     # print("{0} with id: {1}\tAlready in job table ".format(jobTitle, jobId))
                     countSeen += 1
 
-        print("{0} new jobs stored\n{1} jobs already stored")
+        print("{0} new jobs stored\n{1} jobs already stored".format(countNew, countSeen))
 
     def applyJobs(self):
-        pass
+        while True:
+            try:
+                j = Job.get(Job.applied == False)
+                self._applySingleJob(j)
+            except peewee.DoesNotExist:
+                break
 
-    def _applySingleJob(selfs):
-        pass
+    def _applySingleJob(self, job):
+        if (job.easy_apply == True):
+            self.driver.get(IndeedConfig.URL_BASE + job.link)
+            elApply = self.driver.find_element_by_xpath(IndeedConfig.XPATH_APPLY_SPAN)
+            elApply.click()
+
+
 
     def shutDown(self):
         self.driver.close()
