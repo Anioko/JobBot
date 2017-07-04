@@ -16,13 +16,3 @@ class Job(BaseModel):
     applied = BooleanField(default=False)
     date = DateField(default=datetime.datetime.now().date())
     error = TextField(null=True)
-
-def databaseSetup():
-    try:
-        db.create_table(Job)
-    except OperationalError:
-        print('Job table already exists')
-
-def databaseTearDown():
-    db.drop_table(Job)
-    db.close()
