@@ -1,4 +1,6 @@
+import random
 import time
+
 '''
  Meta-decorator, that is a decorator for decorators. 
  As a decorator is a function, it actually works as a regular decorator with arguments
@@ -12,19 +14,23 @@ def _parametrized(dec):
         return repl
     return layer
 
+
+# TODO: Maybe add parameter for how random delta amount
 @_parametrized
 def sleepAfterFunction(func, waitTime):
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
-        time.sleep(waitTime)
+        randomWaitTime = random.uniform(waitTime * .9, waitTime * 1.2)
+        time.sleep(randomWaitTime)
         return result
 
     return wrapper
 
 @_parametrized
-def sleepBeforeFunction(func, waitTime):
+def sleepBeforeFunction(func, waitTime, waitDelta):
     def wrapper(*args, **kwargs):
-        time.sleep(waitTime)
+        randomWaitTime = random.uniform(waitTime * .9, waitTime * 1.2)
+        time.sleep(randomWaitTime)
         return func(*args, **kwargs)
 
     return wrapper
