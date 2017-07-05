@@ -33,6 +33,7 @@ class Blurb(BaseModel):
     id = IntegerField(primary_key=True)
     text = TextField(null=False)
 
+    @staticmethod
     def getHeader():
         return "Blurb Header\nid :: Blurb\n\n"
 
@@ -44,6 +45,7 @@ class Tag(BaseModel):
     text = CharField(null=False)
     blurb = ForeignKeyField(Blurb, related_name='tags')
 
+    @staticmethod
     def getHeader():
         return "Tag Header\nid :: blurbId :: text\n\n"
 

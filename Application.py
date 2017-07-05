@@ -1,6 +1,6 @@
 from models import Blurb, Tag
 
-class Application:
+class ApplicationBuilder:
     def __init__(self):
         # Create tables
         Blurb.create_table(fail_silently=True)
@@ -35,11 +35,18 @@ class Application:
         Tag.create_table(fail_silently=True)
 
 if __name__ == "__main__":
-    a = Application()
+    a = ApplicationBuilder()
 
-    # TODO: Add display options
-
+    optionsText = '''
+    0: Print Blurbs
+    1: Print Tags
+    2: Insert a new blurb
+    3: Add tags to blurb
+    -1: End application
+    -2: Reset tables
+    '''
     while True:
+        print(optionsText)
         userInput = int(input('Make a choice:\n'))
         if userInput == 0:
             print(Blurb.getHeader())
@@ -52,7 +59,7 @@ if __name__ == "__main__":
                 print(tag)
 
         elif userInput == 2:
-            blurb = input('Create a blurb:\n\n')
+            blurb = input('Insert a new blurb:\n\n')
             a.createBlurb(blurb)
 
         elif userInput == 3:
