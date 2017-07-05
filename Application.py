@@ -1,10 +1,20 @@
 from models import Blurb, Tag
+from userconfig import UserConfig
+import os
+import nltk
 
 class ApplicationBuilder:
-    def __init__(self):
+    def __init__(self, userConfig):
         # Create tables
         Blurb.create_table(fail_silently=True)
         Tag.create_table(fail_silently=True)
+        self.userConfig = userConfig
+
+    def generateCoverLetter(self, jobDescription, company):
+        tokens = nltk.word_tokenize(jobDescription)
+        words = sorted(set([word.lower() for word in tokens if word.isalpha()]))
+        print(len(words))
+        print(words)
 
     def getBlurbs(self):
         return Blurb.select()
@@ -25,7 +35,7 @@ class ApplicationBuilder:
 
     def _addTagToBlurb(self, tag, blurbId):
         b = Blurb.select().where(Blurb.id == blurbId)
-        t = Tag.create(text=tag, blurb=b)
+        t = Tag.create(text=tag.lower(), blurb=b)
 
     def resetAllTables(self):
         Tag.drop_table()
@@ -35,16 +45,18 @@ class ApplicationBuilder:
         Tag.create_table(fail_silently=True)
 
 if __name__ == "__main__":
-    a = ApplicationBuilder()
+    a = ApplicationBuilder(UserConfig)
 
     optionsText = '''
     0: Print Blurbs
     1: Print Tags
     2: Insert a new blurb
     3: Add tags to blurb
+    4: Generate cover letter for job description
     -1: End application
     -2: Reset tables
     '''
+
     while True:
         print(optionsText)
         userInput = int(input('Make a choice:\n'))
@@ -67,6 +79,20 @@ if __name__ == "__main__":
             tags = input('Input tags seperated with commas:\n')
             tagList = tags.split(',')
             a.addTagsToBlurb(tagList, blurbId)
+
+        elif userInput == 4:
+            jobText = ""
+            print(('Paste the job description here:\n'))
+            while True:
+                line = input()
+                if line:
+                    jobText += line
+                else:
+                    break
+
+            print()
+            company = input('Enter the company name:\n')
+            a.generateCoverLetter(jobDescription=jobText, company=company)
 
         elif userInput == -1:
             print('End application input')

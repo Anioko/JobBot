@@ -32,6 +32,7 @@ These two models are for the application generator
 class Blurb(BaseModel):
     id = IntegerField(primary_key=True)
     text = TextField(null=False)
+    score = IntegerField(default=1)
 
     @staticmethod
     def getHeader():
@@ -51,7 +52,4 @@ class Tag(BaseModel):
 
     def __str__(self):
         return "{0} :: {1} :: {2}".format(self.id, self.blurb.id, self.text)
-
-
-
 
