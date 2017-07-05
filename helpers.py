@@ -1,7 +1,6 @@
 import random
 import time
 
-
 def _parametrized(dec):
     """
      Meta-decorator, that is a decorator for decorators.

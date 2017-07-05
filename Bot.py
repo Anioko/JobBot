@@ -165,8 +165,9 @@ class IndeedBot(object):
     def _applySingleJob(self, job):
         job.attempted = True
         if (job.easy_apply == True):
-            self.driver.get(IndeedConfig.URL_BASE + job.link)
+            self.driver.get(job.link)
             # Fill job information
+            job.description = self.driver.find_element_by_id('job_summary').text
 
             elApply = self.driver.find_element_by_xpath(IndeedConfig.XPATH_APPLY_SPAN)
             elApply.click()
@@ -185,31 +186,45 @@ class IndeedBot(object):
         job.save()
 
     def fillApplication(self, job):
-        def clearAndFill(el, text):
-            el.clear()
-            el.send_keys(text)
+        self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_NAME).send_keys(self.userConfig.NAME)
+        self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_EMAIL).send_keys(self.userConfig.EMAIL)
+        self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_PHONE).send_keys(self.userConfig.PHONE)
+        self.driver.find_element_by_id(IndeedConfig.ID_BUTTON_RESUME).send_keys(self.userConfig.PATH_SOFTWARE_RESUME)
 
-        clearAndFill(self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_NAME), self.userConfig.NAME)
-        clearAndFill(self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_EMAIL),self.userConfig.EMAIL)
-        clearAndFill(self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_PHONE),self.userConfig.PHONE)
-        elResume = self.driver.find_element_by_id(IndeedConfig.ID_BUTTON_RESUME)
-        elResume.send_keys(self.userConfig.PATH_SOFTWARE_RESUME)
-        companyName = self.driver.find_element_by_xpath(IndeedConfig.XPATH_LABEL_COMPANY_NAME).text
-        clearAndFill(
-            self.driver.find_element_by_id(IndeedConfig.ID_INPUT_COVER_LETTER),
-            self.userConfig.calculateCoverLetter(companyName)
-        )
+        # TODO: Build cover letter generator
+        coverLetter = "Cover letter here"
+        self.driver.find_element_by_id(IndeedConfig.ID_INPUT_COVER_LETTER).send_keys(coverLetter)
 
-        if (self.DRY_RUN):
-            self.driver.find_element_by_xpath(IndeedConfig.XPATH_BUTTON_APPLY)
-            print('Applied to {0}'.format(companyName))
+        # TODO: Handle case where there is additional information to fill out
+        if doesElementExist(self.driver, IndeedConfig.XPATH_BUTTON_CONT):
+            job.attempted = True
+            job.error = "Additional information required (Cont Button)"
         else:
-            self.driver.find_element_by_xpath(IndeedConfig.XPATH_BUTTON_APPLY).click()
+            try:
+                elApplyButton = self.driver.find_element_by_xpath(IndeedConfig.XPATH_BUTTON_APPLY)
+                if (not self.DRY_RUN):
+                    elApplyButton.click()
 
-        job.applied = True
+                job.applied = True
+                print('Applied to {0} with {1} at {2}'.format(job.title, job.company, job.location))
+
+            except common.exceptions.NoSuchElementException as e:
+                job.error = str(e)
+
+        job.save()
+        return
+
 
     def resetTables(self):
         Job.drop_table()
 
     def shutDown(self):
         self.driver.close()
+
+def doesElementExist(driver, xpath):
+    try:
+        driver.find_element_by_xpath(xpath)
+        return True
+
+    except common.exceptions.NoSuchElementException:
+        return False
