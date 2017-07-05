@@ -7,6 +7,10 @@ import re
 class ABConfig(helpers.Const):
     REGEX_TAGS_CAPTURE = re.compile(r"'''(.*?)'''", re.DOTALL)
     REGEX_BLURB_CAPTURE = re.compile(r'"""(.*?)"""', re.DOTALL)
+    START_TAG = 'start_tag'
+    END_TAG = 'end_tag'
+    REPLACE_COMPANY_STRING = r'{COMPANY}'
+    BULLET_POINT = "-"
 
 class ApplicationBuilder:
     def __init__(self, userConfig):
@@ -15,14 +19,29 @@ class ApplicationBuilder:
         Tag.create_table(fail_silently=True)
         self.userConfig = userConfig
 
-    def generateCoverLetter(self, jobDescription, company):
+    def generateMessage(self, jobDescription, company):
+        introTag = Tag.get(Tag.text == ABConfig.START_TAG)
+        endTag = Tag.get(Tag.text == ABConfig.END_TAG)
+
+        blurbIntro = Blurb.get(Blurb.id == introTag.blurb.id)
+        messageBody = self._pickBestBlurbs(jobDescription)
+        blurbEnd = Blurb.get(Blurb.id == endTag.blurb.id)
+
+        finalMessage = "{0}\n{1}\n\n{2}".format(blurbIntro.text, messageBody, blurbEnd.text)
+        return finalMessage.replace(ABConfig.REPLACE_COMPANY_STRING, company)
+
+    def _pickBestBlurbs(self, jobDescription):
+        coverLetterBody = ""
         tokens = nltk.word_tokenize(jobDescription)
         words = set([word.lower() for word in tokens if word.isalpha()])
         # TODO: Singularize words?
         for word in words:
             tagQuery = Tag.select().where(Tag.text == word)
             for tag in tagQuery:
-                print(tag)
+                b = Blurb.get(Blurb.id == tag.blurb.id)
+                coverLetterBody += ABConfig.BULLET_POINT + b.text + "\n"
+
+        return coverLetterBody
 
     def readTagBlurbs(self, filePath):
         with open(filePath, "r") as f:
@@ -68,62 +87,7 @@ class ApplicationBuilder:
 
 if __name__ == "__main__":
     a = ApplicationBuilder(UserConfig)
-
-    optionsText = '''
-    0: Print Blurbs
-    1: Print Tags
-    2: Insert a new blurb
-    3: Add tags to blurb
-    4: Generate cover letter for job description
-    5: Read a file that contains tags and blurbs
-    -1: End application
-    -2: Reset tables
-    '''
-
-    while True:
-        print(optionsText)
-        userInput = int(input('Make a choice:\n'))
-        if userInput == 0:
-            print(Blurb.getHeader())
-            for blurb in a.getBlurbs():
-                print(blurb)
-
-        elif userInput == 1:
-            print(Tag.getHeader())
-            for tag in a.getTags():
-                print(tag)
-
-        elif userInput == 2:
-            blurb = input('Insert a new blurb:\n\n')
-            a.createBlurb(blurb)
-
-        elif userInput == 3:
-            blurbId = input('Enter the Blurb ID to associate tags with:\n')
-            tags = input('Input tags seperated with commas:\n')
-            tagList = tags.split(',')
-            a.addTagsToBlurb(tagList, blurbId)
-
-        elif userInput == 4:
-            jobText = ""
-            print(('Paste the job description here:\n'))
-            while True:
-                line = input()
-                if line:
-                    jobText += line
-                else:
-                    break
-
-            print()
-            company = input('Enter the company name:\n')
-            a.generateCoverLetter(jobDescription=jobText, company=company)
-
-        elif userInput == 5:
-            filePath = input('Input tag-blurb file path:\n')
-            a.readTagBlurbs(filePath)
-
-        elif userInput == -1:
-            print('End application input')
-            break
-
-        elif userInput == -2:
-            a.resetAllTables()
+    desc = '''Test description...'''
+    a.resetAllTables()
+    a.readTagBlurbs('blurbs.txt')
+    print(a.generateMessage(desc, 'comp'))
