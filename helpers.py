@@ -1,12 +1,13 @@
 import random
 import time
 
-'''
- Meta-decorator, that is a decorator for decorators. 
- As a decorator is a function, it actually works as a regular decorator with arguments
-SO: https://stackoverflow.com/a/26151604/5258887
-'''
+
 def _parametrized(dec):
+    """
+     Meta-decorator, that is a decorator for decorators.
+     As a decorator is a function, it actually works as a regular decorator with arguments
+    SO: https://stackoverflow.com/a/26151604/5258887
+    """
     def layer(*args, **kwargs):
         def repl(f):
             return dec(f, *args, **kwargs)
