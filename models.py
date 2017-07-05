@@ -30,7 +30,7 @@ class Job(BaseModel):
 These two models are for the application generator
 """
 class Blurb(BaseModel):
-    id = IntegerField(primary_key=True)
+    id = PrimaryKeyField()
     text = TextField(null=False)
     score = IntegerField(default=1)
 
@@ -42,7 +42,7 @@ class Blurb(BaseModel):
         return "{0} :: {1}".format(self.id, self.text)
 
 class Tag(BaseModel):
-    id = IntegerField(primary_key=True)
+    id = PrimaryKeyField()
     text = CharField(null=False)
     blurb = ForeignKeyField(Blurb, related_name='tags')
 

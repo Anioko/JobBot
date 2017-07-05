@@ -1,7 +1,12 @@
 from models import Blurb, Tag
 from userconfig import UserConfig
-import os
+import helpers
 import nltk
+import re
+
+class ABConfig(helpers.Const):
+    REGEX_TAGS_CAPTURE = re.compile(r"'''(.*?)'''", re.DOTALL)
+    REGEX_BLURB_CAPTURE = re.compile(r'"""(.*?)"""', re.DOTALL)
 
 class ApplicationBuilder:
     def __init__(self, userConfig):
@@ -12,9 +17,25 @@ class ApplicationBuilder:
 
     def generateCoverLetter(self, jobDescription, company):
         tokens = nltk.word_tokenize(jobDescription)
-        words = sorted(set([word.lower() for word in tokens if word.isalpha()]))
-        print(len(words))
-        print(words)
+        words = set([word.lower() for word in tokens if word.isalpha()])
+        # TODO: Singularize words?
+        for word in words:
+            tagQuery = Tag.select().where(Tag.text == word)
+            for tag in tagQuery:
+                print(tag)
+
+    def readTagBlurbs(self, filePath):
+        with open(filePath, "r") as f:
+            content = f.read()
+            list_list_tags = re.findall(ABConfig.REGEX_TAGS_CAPTURE, content)
+            list_blurbs = re.findall(ABConfig.REGEX_BLURB_CAPTURE, content)
+            if len(list_list_tags) == len(list_blurbs):
+                for i in range(0, len(list_blurbs)):
+                    list_tags = list_list_tags[i].split(',')
+                    blurbId = self.createBlurb(list_blurbs[i].strip())
+                    self.addTagsToBlurb(list_tags, blurbId)
+            else:
+                print('Length of tags and blurbs do not match. Perhaps you have a formatting error?')
 
     def getBlurbs(self):
         return Blurb.select()
@@ -24,6 +45,7 @@ class ApplicationBuilder:
 
     def createBlurb(self, blurb):
         b = Blurb.create(text = blurb)
+        return b.id
 
     def addTagsToBlurb(self, tags, blurbId):
         query = Blurb.select().where(Blurb.id == blurbId)
@@ -53,6 +75,7 @@ if __name__ == "__main__":
     2: Insert a new blurb
     3: Add tags to blurb
     4: Generate cover letter for job description
+    5: Read a file that contains tags and blurbs
     -1: End application
     -2: Reset tables
     '''
@@ -93,6 +116,10 @@ if __name__ == "__main__":
             print()
             company = input('Enter the company name:\n')
             a.generateCoverLetter(jobDescription=jobText, company=company)
+
+        elif userInput == 5:
+            filePath = input('Input tag-blurb file path:\n')
+            a.readTagBlurbs(filePath)
 
         elif userInput == -1:
             print('End application input')
