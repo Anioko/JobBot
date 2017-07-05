@@ -7,11 +7,10 @@ from selenium import webdriver, common
 from selenium.webdriver.common.keys import Keys
 
 import helpers
-from constants import Const
-from model import Job
+from models import Job
 
-
-class BotConfig(Const):
+# TODO: Once project is ready to release move configs!
+class BotConfig(helpers.Const):
     WAIT_IMPLICIT = 3
     WAIT_DELTA = .100
     WAIT_LONG = 10
@@ -20,7 +19,7 @@ class BotConfig(Const):
     MAX_COUNT_APPLIED_JOBS = 30
 
 
-class IndeedConfig(Const):
+class IndeedConfig(helpers.Const):
     URL_LOGIN = r'https://secure.indeed.com/account/login?service=my&hl=en_CA&co=CA&continue=https%3A%2F%2Fwww.indeed.ca%2F'
     ID_INPUT_LOGIN_EMAIL = r'signin_email'
     ID_INPUT_LOGIN_PASSWORD = r'signin_password'
@@ -39,7 +38,7 @@ class IndeedConfig(Const):
         'fromage': 'any'
     }
 
-    class DIV_JOB(Const):
+    class DIV_JOB(helpers.Const):
         CLASSES = ['row', 'result']
         CLASS_JOB_LINK = 'jobtitle'
         EASY_APPLY = 'Easily apply'

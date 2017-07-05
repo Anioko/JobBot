@@ -53,4 +53,4 @@ __pycache__/
 
 # Custom
 userconfig.py
-jobdatabase.db
+*.db
