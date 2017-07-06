@@ -19,29 +19,51 @@ class ApplicationBuilder:
         Tag.create_table(fail_silently=True)
         self.userConfig = userConfig
 
-    def generateMessage(self, jobDescription, company):
+    # TODO: Implement a function that can decide which resume to send
+    def generateResume(self, description):
+        pass
+
+    def generateMessage(self, description, company, containMinBlurbs=False):
+        """
+        Returns a generated message based on the job description and company
+        If 'containMinBlurbs' == True, then return None if not enough tags are in description
+        --Useful to see if you are decent fit for the job
+        :param description:
+        :param company:
+        :param containMinBlurbs:
+        :return:
+        """
         introTag = Tag.get(Tag.text == ABConfig.START_TAG)
         endTag = Tag.get(Tag.text == ABConfig.END_TAG)
 
         blurbIntro = Blurb.get(Blurb.id == introTag.blurb.id)
-        messageBody = self._pickBestBlurbs(jobDescription)
         blurbEnd = Blurb.get(Blurb.id == endTag.blurb.id)
+
+        bestBlurbIds = self.pickBestBlurbs(description)
+        messageBody = ''
+        # If not enough blurbs
+        if containMinBlurbs and len(set(bestBlurbIds)) < self.userConfig.MIN_BLURBS:
+            return None
+
+        for bId in bestBlurbIds:
+            blurb = Blurb.get(Blurb.id == bId)
+            messageBody += ABConfig.BULLET_POINT + blurb.text + "\n"
 
         finalMessage = "{0}\n{1}\n\n{2}".format(blurbIntro.text, messageBody, blurbEnd.text)
         return finalMessage.replace(ABConfig.REPLACE_COMPANY_STRING, company)
 
-    def _pickBestBlurbs(self, jobDescription):
-        coverLetterBody = ""
+    def pickBestBlurbs(self, jobDescription):
         tokens = nltk.word_tokenize(jobDescription)
         words = set([word.lower() for word in tokens if word.isalpha()])
         # TODO: Singularize words?
+        blurbIdList = []
         for word in words:
             tagQuery = Tag.select().where(Tag.text == word)
             for tag in tagQuery:
-                b = Blurb.get(Blurb.id == tag.blurb.id)
-                coverLetterBody += ABConfig.BULLET_POINT + b.text + "\n"
+                blurbIdList.append(tag.blurb.id)
 
-        return coverLetterBody
+        # Avoid blurb repeats
+        return sorted(set(blurbIdList))
 
     def readTagBlurbs(self, filePath):
         with open(filePath, "r") as f:

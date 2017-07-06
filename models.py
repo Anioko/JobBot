@@ -25,6 +25,8 @@ class Job(BaseModel):
     attempted = BooleanField(default=False)
     date = DateField(default=datetime.datetime.now().date())
     error = TextField(null=True)
+    cover_letter = TextField(null=True)
+    good_fit = BooleanField(default=True)
 
 """
 These two models are for the application generator
@@ -45,6 +47,7 @@ class Tag(BaseModel):
     id = PrimaryKeyField()
     text = CharField(null=False)
     blurb = ForeignKeyField(Blurb, related_name='tags')
+    type = CharField(null=True) # Example mechanical or software?
 
     @staticmethod
     def getHeader():

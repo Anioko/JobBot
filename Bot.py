@@ -5,7 +5,7 @@ import peewee
 from bs4 import BeautifulSoup
 from selenium import webdriver, common
 from selenium.webdriver.common.keys import Keys
-
+from ApplicationBuilder import ApplicationBuilder
 import helpers
 from models import Job
 
@@ -65,6 +65,11 @@ class IndeedBot(object):
         self.userConfig = userConfig
         self.driver = webdriver.Firefox()
         self.driver.implicitly_wait(BotConfig.WAIT_IMPLICIT)
+        self.AB = ApplicationBuilder(userConfig)
+        self.AB.resetAllTables()
+        print('Initializing Tags and Blurbs from {0}'.format(userConfig.PATH_TAG_BLURBS))
+        self.AB.readTagBlurbs(userConfig.PATH_TAG_BLURBS)
+
         # Create table if not exists
         Job.create_table(True)
 
@@ -164,51 +169,62 @@ class IndeedBot(object):
     def _applySingleJob(self, job):
         job.attempted = True
         if (job.easy_apply == True):
-            self.driver.get(job.link)
-            # Fill job information
-            job.description = self.driver.find_element_by_id('job_summary').text
-
-            elApply = self.driver.find_element_by_xpath(IndeedConfig.XPATH_APPLY_SPAN)
-            elApply.click()
-
-            # TODO: Find better way to do this!
-            # Switch to application form IFRAME, notice that it is a nested IFRAME
             try:
+                self.driver.get(job.link)
+                # Fill job information
+                job.description = self.driver.find_element_by_id('job_summary').text
+
+                elApply = self.driver.find_element_by_xpath(IndeedConfig.XPATH_APPLY_SPAN)
+                elApply.click()
+
+                # TODO: Find better way to do this!
+                # Switch to application form IFRAME, notice that it is a nested IFRAME
                 self.driver.switch_to.frame(1)
                 self.driver.switch_to.frame(0)
                 self.fillApplication(job)
             except common.exceptions.NoSuchFrameException as e:
                 job.error = str(e)
+            # This second exception shouldn't really happen if the job is easy apply as described...
+            except common.exceptions.NoSuchElementException as e:
+                job.error = str(3)
         else:
             pass
 
         job.save()
 
     def fillApplication(self, job):
+        job.attempted = True
+
         self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_NAME).send_keys(self.userConfig.NAME)
         self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_EMAIL).send_keys(self.userConfig.EMAIL)
         self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_PHONE).send_keys(self.userConfig.PHONE)
         self.driver.find_element_by_id(IndeedConfig.ID_BUTTON_RESUME).send_keys(self.userConfig.PATH_SOFTWARE_RESUME)
 
-        # TODO: Build cover letter generator
-        coverLetter = "Cover letter here"
-        self.driver.find_element_by_id(IndeedConfig.ID_INPUT_COVER_LETTER).send_keys(coverLetter)
+        coverLetter = self.AB.generateMessage(job.description, job.company, containMinBlurbs=True)
+        if coverLetter == None:
+            print('Not a good fit for {0} with {1} at {2}'.format(job.title, job.company, job.location))
+            job.good_fit = False
 
-        # TODO: Handle case where there is additional information to fill out
-        if doesElementExist(self.driver, IndeedConfig.XPATH_BUTTON_CONT):
-            job.attempted = True
-            job.error = "Additional information required (Cont Button)"
         else:
-            try:
-                elApplyButton = self.driver.find_element_by_xpath(IndeedConfig.XPATH_BUTTON_APPLY)
-                if (not self.DRY_RUN):
-                    elApplyButton.click()
+            self.driver.find_element_by_id(IndeedConfig.ID_INPUT_COVER_LETTER).send_keys(coverLetter)
+            job.cover_letter = coverLetter
+            if(self.DRY_RUN):
+                print(coverLetter)
 
-                job.applied = True
-                print('Applied to {0} with {1} at {2}'.format(job.title, job.company, job.location))
+            # TODO: Handle case where there is additional information to fill out
+            elif doesElementExist(self.driver, IndeedConfig.XPATH_BUTTON_CONT):
+                job.error = "Additional information required (Cont Button)"
+            else:
+                try:
+                    elApplyButton = self.driver.find_element_by_xpath(IndeedConfig.XPATH_BUTTON_APPLY)
+                    if (not self.DRY_RUN):
+                        elApplyButton.click()
 
-            except common.exceptions.NoSuchElementException as e:
-                job.error = str(e)
+                    job.applied = True
+                    print('Applied to {0} with {1} at {2}'.format(job.title, job.company, job.location))
+
+                except common.exceptions.NoSuchElementException as e:
+                    job.error = str(e)
 
         job.save()
         return
@@ -216,6 +232,7 @@ class IndeedBot(object):
 
     def resetTables(self):
         Job.drop_table()
+        Job.create_table()
 
     def shutDown(self):
         self.driver.close()
