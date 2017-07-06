@@ -1121,3 +1121,28 @@ Full stack:
 1499299767474	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
 1499299770645	Marionette	INFO	Listening on port 51983
 1499299771287	Marionette	WARN	TLS certificate errors will be ignored for this session
+*************************
+A coding exception was thrown and uncaught in a Task.
+
+Full message: TypeError: NetworkError when attempting to fetch resource.
+Full stack: 
+*************************
+1499303683255	Marionette	INFO	Ceased listening
+1499315723648	geckodriver	INFO	Listening on 127.0.0.1:53750
+1499315725753	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499315728836	Marionette	INFO	Listening on port 53756
+1499315729009	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499315934386	geckodriver	INFO	Listening on 127.0.0.1:53847
+1499315936467	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499315939632	Marionette	INFO	Listening on port 53853
+1499315940096	Marionette	WARN	TLS certificate errors will be ignored for this session
+1499316851258	geckodriver	INFO	Listening on 127.0.0.1:54297
+1499316853333	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499316855878	Marionette	INFO	Listening on port 54303
+1499316856470	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript error: https://resources.bamboohr.com/17.0705.212120-5d4baa2/js/combiner.php?lang=en_US&js=1116782&cb=432b4721dfb213048241d845754e8650f18002e1a4, line 12881: ReferenceError: GLOBAL_NUMBER_REGEX is not defined
+1499317581748	geckodriver	INFO	Listening on 127.0.0.1:54765
+1499317583809	geckodriver::marionette	INFO	Starting browser C:\Program Files (x86)\Mozilla Firefox\firefox.exe with args ["-marionette"]
+1499317586437	Marionette	INFO	Listening on port 54771
+1499317586936	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript error: https://resources.bamboohr.com/17.0705.212120-5d4baa2/js/combiner.php?lang=en_US&js=1116782&cb=432b4721dfb213048241d845754e8650f18002e1a4, line 12881: ReferenceError: GLOBAL_NUMBER_REGEX is not defined

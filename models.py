@@ -4,9 +4,11 @@ from peewee import *
 
 db = SqliteDatabase('job_database.db')
 
+
 class BaseModel(Model):
     class Meta:
         database = db
+
 
 class Job(BaseModel):
     # Link Information
@@ -29,8 +31,10 @@ class Job(BaseModel):
     good_fit = BooleanField(default=True)
 
 """
-These two models are for the application generator
+These next two models are for the application builder
 """
+
+
 class Blurb(BaseModel):
     id = PrimaryKeyField()
     text = TextField(null=False)
@@ -42,6 +46,7 @@ class Blurb(BaseModel):
 
     def __str__(self):
         return "{0} :: {1}".format(self.id, self.text)
+
 
 class Tag(BaseModel):
     id = PrimaryKeyField()

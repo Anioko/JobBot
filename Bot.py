@@ -13,9 +13,9 @@ from models import Job
 class BotConfig(helpers.Const):
     WAIT_IMPLICIT = 3
     WAIT_DELTA = .100
-    WAIT_LONG = 10
-    WAIT_MEDIUM = 3
-    WAIT_SHORT = 1
+    WAIT_LONG = 15
+    WAIT_MEDIUM = 7
+    WAIT_SHORT = 2
     MAX_COUNT_APPLIED_JOBS = 30
 
 
@@ -30,7 +30,7 @@ class IndeedConfig(helpers.Const):
 
     # Advanced search query
     SEARCH_PARAMETERS = {
-        'as_any': 'software+developer+engineer+mechanical+mechatronics+programming+android+ios+web+technical',
+        'as_any': 'software+develop+engineer+mechanical+mechatronics+programming+android+ios+technical',
         'jt': 'internship',
         'limit': 50,
         'psf': 'advsrch',
@@ -60,18 +60,20 @@ class IndeedConfig(helpers.Const):
 
 
 class IndeedBot(object):
-    def __init__(self, userConfig, dryRun=False):
+    def __init__(self, userConfig, dryRun=False, reloadTagsBlurbs=True):
         self.DRY_RUN = dryRun
         self.userConfig = userConfig
         self.driver = webdriver.Firefox()
         self.driver.implicitly_wait(BotConfig.WAIT_IMPLICIT)
         self.AB = ApplicationBuilder(userConfig)
-        self.AB.resetAllTables()
-        print('Initializing Tags and Blurbs from {0}'.format(userConfig.PATH_TAG_BLURBS))
-        self.AB.readTagBlurbs(userConfig.PATH_TAG_BLURBS)
+
+        if reloadTagsBlurbs:
+            self.AB.resetAllTables()
+            print('Initializing Tags and Blurbs from {0}'.format(userConfig.PATH_TAG_BLURBS))
+            self.AB.readTagBlurbs(userConfig.PATH_TAG_BLURBS)
 
         # Create table if not exists
-        Job.create_table(True)
+        Job.create_table(fail_silently=True)
 
     def _handlePopup(self):
         try:
@@ -109,7 +111,6 @@ class IndeedBot(object):
 
     @helpers.sleepAfterFunction(BotConfig.WAIT_MEDIUM)
     def _nextPage(self):
-        nextPageExists = False
         try:
             self.driver.find_element_by_xpath(IndeedConfig.XPATH_BUTTON_NEXT_PAGE).click()
             # Right after pressing next a popup alert usually happens
@@ -158,14 +159,14 @@ class IndeedBot(object):
 
         jobs = Job.select().where(Job.applied == False)
         for job in jobs:
-            if (countApplied > BotConfig.MAX_COUNT_APPLIED_JOBS):
+            if countApplied > BotConfig.MAX_COUNT_APPLIED_JOBS:
                 print('Max job apply limit reached')
                 break
 
             self._applySingleJob(job)
             countApplied += 1
 
-    @helpers.sleepAfterFunction(BotConfig.WAIT_MEDIUM)
+    @helpers.sleepAfterFunction(BotConfig.WAIT_LONG)
     def _applySingleJob(self, job):
         job.attempted = True
         if (job.easy_apply == True):
@@ -184,15 +185,19 @@ class IndeedBot(object):
                 self.fillApplication(job)
             except common.exceptions.NoSuchFrameException as e:
                 job.error = str(e)
+                print(e)
+
             # This second exception shouldn't really happen if the job is easy apply as described...
             except common.exceptions.NoSuchElementException as e:
-                job.error = str(3)
+                job.error = str(e)
+                print(e)
         else:
             pass
 
         job.save()
 
     def fillApplication(self, job):
+        print('Attempting application for {0} with {1} at {2}'.format(job.title, job.company, job.location))
         job.attempted = True
 
         self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_NAME).send_keys(self.userConfig.NAME)
@@ -202,35 +207,36 @@ class IndeedBot(object):
 
         coverLetter = self.AB.generateMessage(job.description, job.company, containMinBlurbs=True)
         if coverLetter == None:
-            print('Not a good fit for {0} with {1} at {2}'.format(job.title, job.company, job.location))
+            print('Not enough keyword matches')
             job.good_fit = False
 
         else:
             self.driver.find_element_by_id(IndeedConfig.ID_INPUT_COVER_LETTER).send_keys(coverLetter)
             job.cover_letter = coverLetter
-            if(self.DRY_RUN):
+            if self.DRY_RUN:
                 print(coverLetter)
 
             # TODO: Handle case where there is additional information to fill out
             elif doesElementExist(self.driver, IndeedConfig.XPATH_BUTTON_CONT):
                 job.error = "Additional information required (Cont Button)"
+                print('Additional information required (Cont Button)')
             else:
                 try:
                     elApplyButton = self.driver.find_element_by_xpath(IndeedConfig.XPATH_BUTTON_APPLY)
-                    if (not self.DRY_RUN):
+                    if not self.DRY_RUN:
                         elApplyButton.click()
-
+                    print('Successfully applied!')
                     job.applied = True
-                    print('Applied to {0} with {1} at {2}'.format(job.title, job.company, job.location))
 
                 except common.exceptions.NoSuchElementException as e:
+                    print(e)
                     job.error = str(e)
 
         job.save()
         return
 
-
-    def resetTables(self):
+    @staticmethod
+    def resetTables():
         Job.drop_table()
         Job.create_table()
 
