@@ -30,6 +30,15 @@ class Job(BaseModel):
     cover_letter = TextField(null=True)
     good_fit = BooleanField(default=True)
 
+class Question(BaseModel):
+    """
+    A model for the questions on Indeed easy apply
+    """
+    label = TextField(primary_key=True)
+    answer = TextField(null=True)
+    website = CharField(null=False)
+    input_type = CharField(null=False)
+    question_type = CharField()
 """
 These next two models are for the application builder
 """

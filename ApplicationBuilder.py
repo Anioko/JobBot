@@ -24,7 +24,7 @@ class ApplicationBuilder:
         Blurb.create_table(fail_silently=True)
         Tag.create_table(fail_silently=True)
         self.userConfig = userConfig
-        self.lemmatizer = nltk.stem.wordnet.WordNetLemmatizer()
+        self.lemmatizer = nltk.stem.WordNetLemmatizer()
 
     # TODO: Implement a function that can decide which resume to send
     def generateResume(self, description):
@@ -61,10 +61,14 @@ class ApplicationBuilder:
 
     def pickBestBlurbs(self, jobDescription):
         tokens = nltk.word_tokenize(jobDescription)
-        words = set([word.lower() for word in tokens if word.isalpha()])
-        words = [self.lemmatizer.lemmatize(word) for word in words]
+        word_list = set([word.lower() for word in tokens if word.isalpha()])
+        # Remove stopwords (the, a)
+        filteredWords = [word for word in word_list if word not in nltk.corpus.stopwords.words('english')]
+        # Stem words
+        keyWords = [self.lemmatizer.lemmatize(word, 'v') for word in filteredWords]
+
         blurbIdList = []
-        for word in words:
+        for word in keyWords:
             tagQuery = Tag.select().where(Tag.text == word)
             for tag in tagQuery:
                 blurbIdList.append(tag.blurb.id)
