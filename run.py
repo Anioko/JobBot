@@ -6,4 +6,4 @@ if __name__ == "__main__":
     # bot.login()
     # bot.searchJobs()
     bot.apply_jobs()
-    bot.shutDown()
+    bot.shut_down()

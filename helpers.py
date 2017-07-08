@@ -5,12 +5,15 @@ import time
 Point of these two classes is to allow me to make a constant object dictionary.
 Acts somewhat similar to a String Enum or a object in Javascript
 """
+
+
 class MetaConst(type):
     def __getattr__(cls, key):
         return cls[key]
 
     def __setattr__(cls, key, value):
         raise TypeError
+
 
 class Const(object, metaclass=MetaConst):
     def __getattr__(self, name):
@@ -36,7 +39,7 @@ def _parametrized(dec):
 
 # TODO: Maybe add parameter for how random delta amount
 @_parametrized
-def sleepAfterFunction(func, waitTime):
+def sleep_after_function(func, waitTime):
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
         randomWaitTime = random.uniform(waitTime * .9, waitTime * 1.2)
@@ -46,7 +49,7 @@ def sleepAfterFunction(func, waitTime):
     return wrapper
 
 @_parametrized
-def sleepBeforeFunction(func, waitTime, waitDelta):
+def sleep_before_function(func, waitTime, waitDelta):
     def wrapper(*args, **kwargs):
         randomWaitTime = random.uniform(waitTime * .9, waitTime * 1.2)
         time.sleep(randomWaitTime)

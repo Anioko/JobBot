@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver, common
 from selenium.webdriver.common.keys import Keys
 from Application.ApplicationBuilder import ApplicationBuilder
-from helpers import sleepAfterFunction
+from helpers import sleep_after_function
 from constants import HTML
 from models import Job, Question
 from Bot.constants import BotConstants, IndeedConstants
@@ -22,7 +22,7 @@ class IndeedBot(object):
         self.driver.implicitly_wait(BotConstants.WAIT_IMPLICIT)
         self.application_builder = ApplicationBuilder(user_config)
 
-        self._createTables()
+        self._create_tables()
 
         if reload_tags_blurbs:
             self.application_builder.resetAllTables()
@@ -44,7 +44,7 @@ class IndeedBot(object):
         self.driver.find_element_by_id(IndeedConstants.ID_INPUT_LOGIN_PASSWORD).send_keys(self.user_config.PASSWORD)
         elEmail.submit()
 
-        while (self.driver.current_url != IndeedConstants.URL_BASE):
+        while self.driver.current_url != IndeedConstants.URL_BASE:
             time.sleep(BotConstants.WAIT_DELTA)
 
     def search_jobs(self):
@@ -63,7 +63,7 @@ class IndeedBot(object):
             if not next_page_exists:
                 break
 
-    @sleepAfterFunction(BotConstants.WAIT_MEDIUM)
+    @sleep_after_function(BotConstants.WAIT_MEDIUM)
     def _next_page(self):
         try:
             self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_NEXT_PAGE).click()
@@ -120,7 +120,7 @@ class IndeedBot(object):
             self._apply_to_single_job(job)
             count_applied += 1
 
-    @sleepAfterFunction(BotConstants.WAIT_MEDIUM)
+    @sleep_after_function(BotConstants.WAIT_MEDIUM)
     def _apply_to_single_job(self, job):
         """
         Assuming you are on a job page, presses the apply button and switches to the application
@@ -130,6 +130,7 @@ class IndeedBot(object):
         :return:
         """
         # TODO: Add assert to ensure you are on job page
+        print('Attempting application for {0} with {1} at {2}'.format(job.title, job.company, job.location))
         job.attempted = True
         if job.easy_apply:
             try:
@@ -175,39 +176,41 @@ class IndeedBot(object):
                 )
                 self.application_builder.add_question_to_database(q_object)
 
-        def answer_questions(list_qle, job):
+        def answer_questions(list_qle):
             """
             Returns True if all questions successfully answered and False otherwise
             :param list_qle:
             :return:
             """
-            remove_set = set()
+            remove_labels = set()
             while True:
                 q_not_visible = False
                 unable_to_answer = False
                 for i in range(0, len(list_qle)):
                     qle = list_qle[i]
-                    q_answer = self.application_builder.answer_question(qle.label)
+                    q_answer = self.application_builder.answer_question(job=job, question_label=qle.label)
 
                     if q_answer is None:
                         unable_to_answer = True
                     else:
-                        qle.element.send_keys(q_answer)
-                        remove_set.add(i)
+                        try:
+                            qle.element.send_keys(q_answer)
+                            remove_labels.add(qle.label)
+                        except common.exceptions.ElementNotInteractableException:
+                            q_not_visible = True
 
                 # All questions answered!
-                if len(remove_set) == 0 and len(list_qle) == 0:
-                    break
+                if len(list_qle) == 0:
+                    return True
                 # Stuck on a question with no answer
                 elif unable_to_answer:
                     break
-
                 # Remove answered questions
                 else:
-                    for index in remove_set:
-                        list_qle.pop(index)
-                    remove_set.clear()
-
+                    list_qle = [qle for qle in list_qle if qle.label not in remove_labels]
+                    remove_labels.clear()
+                    if q_not_visible:
+                        self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_CONT).click()
             return False
 
         q_element_labels = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_LABELS)
@@ -223,34 +226,36 @@ class IndeedBot(object):
                 )
             )
         add_questions_to_database(list_question_label_element)
-        if answer_questions(list_question_label_element, job):
-            # TODO: Press apply
-            pass
+        if answer_questions(list_question_label_element):
+            self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_APPLY).click()
+            job.applied = True
+            print('Successfully applied to {0} with {1} at {2}'.format(job.title, job.company, job.location))
+
         return
 
     @staticmethod
-    def _createTables():
+    def _create_tables():
         # Create table if not exists
         Job.create_table(fail_silently=True)
         Question.create_table(fail_silently=True)
 
-    def shutDown(self):
+    def shut_down(self):
         self.driver.close()
 
 
-def doesElementExist(driver, identifer, useXPath = True):
+def does_element_exist(driver, identifier, useXPath = True):
     """
     Function that checks if a element exists on the page
     :param driver: selenium.webdriver
-    :param identifer: either a ID attribute or an xPath
+    :param identifier: either a ID attribute or an xPath
     :param useXPath:
     :return:
     """
     try:
         if useXPath:
-            driver.find_element_by_xpath(identifer)
+            driver.find_element_by_xpath(identifier)
         else:
-            driver.find_element_by_id(identifer)
+            driver.find_element_by_id(identifier)
         return True
 
     except common.exceptions.NoSuchElementException:
