@@ -12,29 +12,51 @@ class ApplicationBuilder:
         # Create tables
         Blurb.create_table(fail_silently=True)
         Tag.create_table(fail_silently=True)
-        self.userConfig = user_config
+        self.user_config = user_config
         self.lemmatizer = nltk.stem.WordNetLemmatizer()
 
     # TODO: Implement a function that can decide which resume to send
     def generate_resume(self, description):
-        pass
+        raise NotImplementedError
 
-    def answer_question(self, label):
+    def answer_question(self,job, label):
         try:
             question = Question.get(Question.label == label)
+            return question.answer
 
         except peewee.DoesNotExist:
-            pass
+            if ABConstants.QuestionNeedle.MESSAGE in label:
+                return self.generate_message(job.description, job.company)
+            else:
+                return None
 
-    @staticmethod
-    def add_question_to_database(qObject):
+    def add_question_to_database(self, q_object):
+        def _categorize_question(q):
+            if ABConstants.QuestionNeedle.RESUME in q.label:
+                q.question_type = ABConstants.QuestionTypes.RESUME
+            elif ABConstants.QuestionNeedle.MESSAGE in q.label:
+                q.question_type = ABConstants.QuestionTypes.MESSAGE
+            elif ABConstants.QuestionNeedle.LOCATION in q.label:
+                q.question_type = ABConstants.QuestionTypes.LOCATION
+            elif ABConstants.QuestionNeedle.EXPERIENCE in q.label:
+                q.question_type = ABConstants.QuestionTypes.EXPERIENCE
+            elif any(string in q.label for string in ABConstants.QuestionNeedle.LIST_CONTACT_INFO):
+                q.question_type = ABConstants.QuestionTypes.CONTACT_INFO
+
+            q.save()
+
         try:
-            Question.create(
-                label = qObject.label,
-                website = qObject.answer,
-                input_type=qObject.input_type,
-                secondary_input_type=qObject.secondary_input_type
+            if q_object.website == ABConstants.INDEED:
+                q_object.label = re.sub(r'\([^)]*\)', '', q_object.label)
+
+            q = Question.create(
+                label=q_object.label,
+                website=q_object.website,
+                input_type=q_object.input_type,
+                secondary_input_type=q_object.secondary_input_type
             )
+            _categorize_question(q)
+
         except peewee.IntegrityError:
             pass
 
@@ -57,7 +79,7 @@ class ApplicationBuilder:
         best_blurb_ids = self.pick_best_blurbs(description)
         message_body = ''
         # If not enough blurbs
-        if contain_min_blurbs and len(set(best_blurb_ids)) < self.userConfig.MIN_BLURBS:
+        if contain_min_blurbs and len(set(best_blurb_ids)) < self.user_config.MIN_BLURBS:
             return None
 
         for b_id in best_blurb_ids:

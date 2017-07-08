@@ -11,6 +11,7 @@ class BotConstants(Const):
 
 
 class IndeedConstants(Const):
+    WEBSITE_NAME = 'Indeed'
     URL_LOGIN = r'https://secure.indeed.com/account/login?service=my&hl=en_CA&co=CA&continue=https%3A%2F%2Fwww.indeed.ca%2F'
     ID_INPUT_LOGIN_EMAIL = r'signin_email'
     ID_INPUT_LOGIN_PASSWORD = r'signin_password'

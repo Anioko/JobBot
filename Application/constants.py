@@ -13,3 +13,24 @@ class ApplicationBuilderConstants(Const):
     END_TAG = 'end_tag'
     REPLACE_COMPANY_STRING = r'{COMPANY}'
     BULLET_POINT = "-"
+
+    # Possible websites
+    INDEED = 'Indeed'
+
+    class QuestionNeedle(Const):
+        """
+        Constants used to determine which question type the question is
+        """
+        RESUME = 'resume'
+        MESSAGE = 'cover letter'
+        LOCATION = 'located'
+        EXPERIENCE = 'experience'
+        LIST_CONTACT_INFO = ['name', 'email', 'phone number']
+
+    # TODO: Use custom field in peewee
+    class QuestionTypes(Const):
+        RESUME = 'resume'
+        MESSAGE = 'message'
+        LOCATION = 'location'
+        EXPERIENCE = 'experience'
+        CONTACT_INFO = 'contact_info'

@@ -11,7 +11,7 @@ from models import Job, Question
 from Bot.constants import BotConstants, IndeedConstants
 from collections import namedtuple
 
-QuestionLabelElement = namedtuple('QuestionLabelElement','label','element')
+QuestionLabelElement = namedtuple('QuestionLabelElement','label element')
 
 
 class IndeedBot(object):
@@ -117,11 +117,11 @@ class IndeedBot(object):
                 print('Max job apply limit reached')
                 break
 
-            self._applySingleJob(job)
+            self._apply_to_single_job(job)
             count_applied += 1
 
     @sleepAfterFunction(BotConstants.WAIT_MEDIUM)
-    def _applySingleJob(self, job):
+    def _apply_to_single_job(self, job):
         """
         Assuming you are on a job page, presses the apply button and switches to the application
         IFrame. If everything is working properly it call fill_application.
@@ -131,7 +131,7 @@ class IndeedBot(object):
         """
         # TODO: Add assert to ensure you are on job page
         job.attempted = True
-        if job.easy_apply == True:
+        if job.easy_apply:
             try:
                 self.driver.get(job.link)
                 # Fill job information
@@ -169,41 +169,45 @@ class IndeedBot(object):
             for qle in list_qle:
                 q_object = Question(
                     label=qle.label,
-                    website=IndeedConstants.URL_BASE,
+                    website=IndeedConstants.WEBSITE_NAME,
                     input_type=qle.element.tag_name,
                     secondary_input_type=qle.element.get_attribute(HTML.Attributes.TYPE)
                 )
                 self.application_builder.add_question_to_database(q_object)
 
-        def answer_questions(list_qle):
+        def answer_questions(list_qle, job):
             """
             Returns True if all questions successfully answered and False otherwise
-            :param q_dict:
+            :param list_qle:
             :return:
             """
             remove_set = set()
             while True:
                 q_not_visible = False
+                unable_to_answer = False
                 for i in range(0, len(list_qle)):
                     qle = list_qle[i]
                     q_answer = self.application_builder.answer_question(qle.label)
-                    remove_set.add(i)
 
-                # TODO: Fill in
+                    if q_answer is None:
+                        unable_to_answer = True
+                    else:
+                        qle.element.send_keys(q_answer)
+                        remove_set.add(i)
+
                 # All questions answered!
                 if len(remove_set) == 0 and len(list_qle) == 0:
                     break
-                # No more questions can be answered
-                elif len(remove_set) == 0:
-                    # Press continue
-                    if q_not_visible:
-                        pass
-                    # Give up for now...
-                    else:
-                        break
+                # Stuck on a question with no answer
+                elif unable_to_answer:
+                    break
+
                 # Remove answered questions
                 else:
+                    for index in remove_set:
+                        list_qle.pop(index)
                     remove_set.clear()
+
             return False
 
         q_element_labels = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_LABELS)
@@ -211,13 +215,18 @@ class IndeedBot(object):
         assert(len(q_element_labels) == len(q_element_inputs))
         list_question_label_element = []
         for i in range(0, len(q_element_labels)):
+            formatted_label = q_element_labels[i].get_attribute(HTML.Attributes.INNER_TEXT).lower().strip()
             list_question_label_element.append(
                 QuestionLabelElement(
-                    label=q_element_labels[i].get_attribute(HTML.Attributes.INNER_TEXT),
+                    label= formatted_label,
                     element=q_element_inputs[i]
                 )
             )
-
+        add_questions_to_database(list_question_label_element)
+        if answer_questions(list_question_label_element, job):
+            # TODO: Press apply
+            pass
+        return
 
     @staticmethod
     def _createTables():

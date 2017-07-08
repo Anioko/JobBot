@@ -30,6 +30,7 @@ class Job(BaseModel):
     cover_letter = TextField(null=True)
     good_fit = BooleanField(default=True)
 
+
 class Question(BaseModel):
     """
     A model for the questions on Indeed easy apply
@@ -51,7 +52,7 @@ class Blurb(BaseModel):
     score = IntegerField(default=1)
 
     @staticmethod
-    def getHeader():
+    def get_header():
         return "Blurb Header\nid :: Blurb\n\n"
 
     def __str__(self):
@@ -65,7 +66,7 @@ class Tag(BaseModel):
     type = CharField(null=True) # Example mechanical or software?
 
     @staticmethod
-    def getHeader():
+    def get_header():
         return "Tag Header\nid :: blurbId :: text\n\n"
 
     def __str__(self):
