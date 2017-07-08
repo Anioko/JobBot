@@ -33,8 +33,10 @@ class IndeedConstants(Const):
     class DIV_JOB(Const):
         CLASSES = ['row', 'result']
         CLASS_JOB_LINK = 'jobtitle'
+        CLASS_JOB_COMPANY = 'company'
+        CLASS_JOB_LOCATION = 'location'
         EASY_APPLY = 'Easily apply'
-        CLASS_SPONSERED = 'sponsoredGray'
+        CLASS_SPONSORED = 'sponsoredGray'
         XPATH_COMPANY_NAME = r"//"
 
     XPATH_BUTTON_NEXT_PAGE = r"//div[contains(@class, 'pagination')]//span[contains(text(), 'Next')]"

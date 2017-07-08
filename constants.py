@@ -15,3 +15,5 @@ class HTML(Const):
     class Attributes(Const):
         HREF = 'href'
         TYPE = 'type'
+        ID = 'id'
+        INNER_TEXT = 'innerText'

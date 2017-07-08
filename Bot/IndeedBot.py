@@ -4,14 +4,15 @@ import peewee
 from bs4 import BeautifulSoup
 from selenium import webdriver, common
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from Application.ApplicationBuilder import ApplicationBuilder
 from helpers import sleepAfterFunction
 from constants import HTML
 from models import Job, Question
 from Bot.constants import BotConstants, IndeedConstants
+from collections import namedtuple
+
+QuestionLabelElement = namedtuple('QuestionLabelElement','label','element')
+
 
 class IndeedBot(object):
     def __init__(self, user_config, dry_run=False, reload_tags_blurbs=True):
@@ -48,22 +49,22 @@ class IndeedBot(object):
 
     def search_jobs(self):
         # Apparently the difference between %2B and + matters in the search query
-        urlArgs = urlencode(IndeedConstants.SEARCH_PARAMETERS).replace('%2B', '+')
-        searchURL = IndeedConstants.URL_SEARCH + urlArgs
-        self.driver.get(searchURL)
+        url_args = urlencode(IndeedConstants.SEARCH_PARAMETERS).replace('%2B', '+')
+        search_url = IndeedConstants.URL_SEARCH + url_args
+        self.driver.get(search_url)
 
         while True:
             soup = BeautifulSoup(self.driver.page_source, 'html.parser')
-            jobResultsSoup = soup.find_all(HTML.TagType.DIV, class_=IndeedConstants.DIV_JOB.CLASSES)
+            job_results_soup = soup.find_all(HTML.TagType.DIV, class_=IndeedConstants.DIV_JOB.CLASSES)
 
-            self.storeJobs(jobResultsSoup)
+            self.store_jobs(job_results_soup)
 
-            nextPageExists = self._nextPage()
-            if not nextPageExists:
+            next_page_exists = self._next_page()
+            if not next_page_exists:
                 break
 
     @sleepAfterFunction(BotConstants.WAIT_MEDIUM)
-    def _nextPage(self):
+    def _next_page(self):
         try:
             self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_NEXT_PAGE).click()
             # Right after pressing next a popup alert usually happens
@@ -74,69 +75,76 @@ class IndeedBot(object):
             print('Next button not found.\nNo more search results')
             return False
 
-    def storeJobs(self, jobResultsSoup):
-        countNew = 0
-        countSeen = 0
+    def store_jobs(self, job_results_soup):
+        count_new = 0
+        count_seen = 0
 
         # Iterated through results and save to database
-        for jobTag in jobResultsSoup:
-            if IndeedConstants.DIV_JOB.EASY_APPLY in jobTag.text:
-                if len(jobTag.find_all(HTML.TagType.SPAN, class_=IndeedConstants.DIV_JOB.CLASS_SPONSERED)) != 0:
-                    jobTitleSoup = jobTag.find_all(HTML.TagType.ANCHOR, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LINK)[0]
-                    jobLink = IndeedConstants.URL_BASE + jobTitleSoup[HTML.Attributes.HREF]
+        for job_tag in job_results_soup:
+            if IndeedConstants.DIV_JOB.EASY_APPLY in job_tag.text:
+                if len(job_tag.find_all(HTML.TagType.SPAN, class_=IndeedConstants.DIV_JOB.CLASS_SPONSORED)) != 0:
+                    job_title_soup = job_tag.find_all(HTML.TagType.ANCHOR, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LINK)[0]
+                    job_link = IndeedConstants.URL_BASE + job_title_soup[HTML.Attributes.HREF]
                 else:
-                    jobTitleSoup = jobTag.find_all(HTML.TagType.H2, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LINK)[0]
-                    jobLink = IndeedConstants.URL_BASE + jobTitleSoup.a[HTML.Attributes.HREF]
+                    job_title_soup = job_tag.find_all(HTML.TagType.H2, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LINK)[0]
+                    job_link = IndeedConstants.URL_BASE + job_title_soup.a[HTML.Attributes.HREF]
 
-                jobId = jobTag['id']
+                job_id = job_tag[HTML.Attributes.ID]
                 # Format
-                jobCompany = jobTag.find(HTML.TagType.SPAN, class_='company').text.strip()
-                jobLocation = jobTag.find(HTML.TagType.SPAN, class_='location').text.strip()
-                jobTitle = jobTitleSoup.text.strip()
+                job_company = job_tag.find(HTML.TagType.SPAN, class_=IndeedConstants.DIV_JOB.CLASS_JOB_COMPANY).text.strip()
+                job_location = job_tag.find(HTML.TagType.SPAN, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LOCATION).text.strip()
+                job_title = job_title_soup.text.strip()
 
                 try:
                     job = Job.create(
-                        link_id=jobId, link=jobLink, title=jobTitle, location=jobLocation,
-                        company=jobCompany, easy_apply=True
+                        link_id=job_id, link=job_link, title=job_title, location=job_location,
+                        company=job_company, easy_apply=True
                     )
                     job.save()
-                    countNew += 1
+                    count_new += 1
                 except peewee.IntegrityError:
                     # print("{0} with id: {1}\tAlready in job table ".format(jobTitle, jobId))
-                    countSeen += 1
+                    count_seen += 1
 
-        print("{0} new jobs stored\n{1} jobs already stored".format(countNew, countSeen))
+        print("{0} new jobs stored\n{1} jobs already stored".format(count_new, count_seen))
 
-    def applyJobs(self):
-        countApplied = 0
+    def apply_jobs(self):
+        count_applied = 0
 
         jobs = Job.select().where(Job.applied == False)
         for job in jobs:
-            if countApplied > BotConstants.MAX_COUNT_APPLIED_JOBS:
+            if count_applied > BotConstants.MAX_COUNT_APPLIED_JOBS:
                 print('Max job apply limit reached')
                 break
 
             self._applySingleJob(job)
-            countApplied += 1
+            count_applied += 1
 
     @sleepAfterFunction(BotConstants.WAIT_MEDIUM)
     def _applySingleJob(self, job):
+        """
+        Assuming you are on a job page, presses the apply button and switches to the application
+        IFrame. If everything is working properly it call fill_application.
+        Lastly, it saves any changes made to the job table
+        :param job:
+        :return:
+        """
+        # TODO: Add assert to ensure you are on job page
         job.attempted = True
-        if (job.easy_apply == True):
+        if job.easy_apply == True:
             try:
                 self.driver.get(job.link)
                 # Fill job information
                 job.description = self.driver.find_element_by_id('job_summary').text
 
-                elApply = self.driver.find_element_by_xpath(IndeedConstants.XPATH_APPLY_SPAN)
-                elApply.click()
+                self.driver.find_element_by_xpath(IndeedConstants.XPATH_APPLY_SPAN).click()
 
                 # TODO: Find better way to do this!
                 # Switch to application form IFRAME, notice that it is a nested IFRAME
                 self.driver.switch_to.frame(1)
                 self.driver.switch_to.frame(0)
 
-                self.fillApplication(job, dryRun=self.DRY_RUN)
+                self.fill_application(job, dry_run=self.DRY_RUN)
 
             except common.exceptions.NoSuchFrameException as e:
                 job.error = str(e)
@@ -151,54 +159,64 @@ class IndeedBot(object):
 
         job.save()
 
-    def fillApplication(self, job, dryRun = False):
-        def addQuestionsToDatabase(qElementLabels, qElements):
-            qDict = {}
-            for i in range(0, len(qLabels)):
-                currentLabel = qLabels[i]
-                currentElement = qElements[i]
-                qObject = Question(
-                    label=currentLabel,
-                    website=IndeedConstants.URL_BASE,
-                    input_type=currentElement.tag_name,
-                    secondary_input_type=currentElement.get_attribute(HTML.Attributes.TYPE)
-                )
-                self.application_builder.add_question_to_database(qObject)
-
-        def answerQuestions(qDict):
+    def fill_application(self, job, dry_run=False):
+        def add_questions_to_database(list_qle):
             """
-            Returns True if all questions successfully answered and False otherwise
-            :param qDict:
+            Passes a question model object to application builder to add to database
+            :param list_qle: List of QuestionLabelElement namedtupled objects
             :return:
             """
-            removeSet = set()
+            for qle in list_qle:
+                q_object = Question(
+                    label=qle.label,
+                    website=IndeedConstants.URL_BASE,
+                    input_type=qle.element.tag_name,
+                    secondary_input_type=qle.element.get_attribute(HTML.Attributes.TYPE)
+                )
+                self.application_builder.add_question_to_database(q_object)
+
+        def answer_questions(list_qle):
+            """
+            Returns True if all questions successfully answered and False otherwise
+            :param q_dict:
+            :return:
+            """
+            remove_set = set()
             while True:
-                qNotVisible = False
-                for label, question in qDict.items():
-                    qAnswer = self.application_builder.answer_question(question)
-                    removeSet.add(question.label)
+                q_not_visible = False
+                for i in range(0, len(list_qle)):
+                    qle = list_qle[i]
+                    q_answer = self.application_builder.answer_question(qle.label)
+                    remove_set.add(i)
 
                 # TODO: Fill in
                 # All questions answered!
-                if len(removeSet) == 0 and len(qDict) == 0:
+                if len(remove_set) == 0 and len(list_qle) == 0:
                     break
                 # No more questions can be answered
-                elif len(removeSet) == 0:
+                elif len(remove_set) == 0:
                     # Press continue
-                    if qNotVisible:
+                    if q_not_visible:
                         pass
                     # Give up for now...
                     else:
                         break
                 # Remove answered questions
                 else:
-                    removeSet.clear()
+                    remove_set.clear()
             return False
 
-        qElementLabels = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_LABELS)
-        qElementInputs = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_INPUTS)
-        assert(len(qElementLabels) == len(qElementInputs))
-        qLabels = [qElementLabel.get_attribute('innerText') for qElementLabel in qElementLabels]
+        q_element_labels = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_LABELS)
+        q_element_inputs = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_INPUTS)
+        assert(len(q_element_labels) == len(q_element_inputs))
+        list_question_label_element = []
+        for i in range(0, len(q_element_labels)):
+            list_question_label_element.append(
+                QuestionLabelElement(
+                    label=q_element_labels[i].get_attribute(HTML.Attributes.INNER_TEXT),
+                    element=q_element_inputs[i]
+                )
+            )
 
 
     @staticmethod
@@ -209,6 +227,7 @@ class IndeedBot(object):
 
     def shutDown(self):
         self.driver.close()
+
 
 def doesElementExist(driver, identifer, useXPath = True):
     """

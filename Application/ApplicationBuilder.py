@@ -22,6 +22,7 @@ class ApplicationBuilder:
     def answer_question(self, label):
         try:
             question = Question.get(Question.label == label)
+
         except peewee.DoesNotExist:
             pass
 

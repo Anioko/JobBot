@@ -5,5 +5,5 @@ if __name__ == "__main__":
     bot = IndeedBot(UserConfig(), dry_run=False)
     # bot.login()
     # bot.searchJobs()
-    bot.applyJobs()
+    bot.apply_jobs()
     bot.shutDown()
