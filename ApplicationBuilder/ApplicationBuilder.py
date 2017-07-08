@@ -3,6 +3,8 @@ from userconfig import UserConfig
 import helpers
 import nltk
 import re
+from models import Question
+import peewee
 
 
 class ABConfig(helpers.Const):
@@ -19,64 +21,82 @@ class ABConfig(helpers.Const):
 
 
 class ApplicationBuilder:
-    def __init__(self, userConfig):
+    def __init__(self, user_config):
         # Create tables
         Blurb.create_table(fail_silently=True)
         Tag.create_table(fail_silently=True)
-        self.userConfig = userConfig
+        self.userConfig = user_config
         self.lemmatizer = nltk.stem.WordNetLemmatizer()
 
     # TODO: Implement a function that can decide which resume to send
-    def generateResume(self, description):
+    def generate_resume(self, description):
         pass
 
-    def generateMessage(self, description, company, containMinBlurbs=False):
+    def answer_question(self, label):
+        try:
+            question = Question.get(Question.label == label)
+        except peewee.DoesNotExist:
+            pass
+
+    @staticmethod
+    def add_question_to_database(qObject):
+        try:
+            Question.create(
+                label = qObject.label,
+                website = qObject.answer,
+                input_type=qObject.input_type,
+                secondary_input_type=qObject.secondary_input_type
+            )
+        except peewee.IntegrityError:
+            pass
+
+    def generate_message(self, description, company, contain_min_blurbs=False):
         """
         Returns a generated message based on the job description and company
         If 'containMinBlurbs' == True, then return None if not enough tags are in description
         --Useful to see if you are decent fit for the job
         :param description:
         :param company:
-        :param containMinBlurbs:
+        :param contain_min_blurbs:
         :return:
         """
-        introTag = Tag.get(Tag.text == ABConfig.START_TAG)
-        endTag = Tag.get(Tag.text == ABConfig.END_TAG)
+        intro_tag = Tag.get(Tag.text == ABConfig.START_TAG)
+        end_tag = Tag.get(Tag.text == ABConfig.END_TAG)
 
-        blurbIntro = Blurb.get(Blurb.id == introTag.blurb.id)
-        blurbEnd = Blurb.get(Blurb.id == endTag.blurb.id)
+        blurb_intro = Blurb.get(Blurb.id == intro_tag.blurb.id)
+        blurb_end = Blurb.get(Blurb.id == end_tag.blurb.id)
 
-        bestBlurbIds = self.pickBestBlurbs(description)
-        messageBody = ''
+        best_blurb_ids = self.pick_best_blurbs(description)
+        message_body = ''
         # If not enough blurbs
-        if containMinBlurbs and len(set(bestBlurbIds)) < self.userConfig.MIN_BLURBS:
+        if contain_min_blurbs and len(set(best_blurb_ids)) < self.userConfig.MIN_BLURBS:
             return None
 
-        for bId in bestBlurbIds:
-            blurb = Blurb.get(Blurb.id == bId)
-            messageBody += ABConfig.BULLET_POINT + blurb.text + "\n"
+        for b_id in best_blurb_ids:
+            blurb = Blurb.get(Blurb.id == b_id)
+            message_body += ABConfig.BULLET_POINT + blurb.text + "\n"
 
-        finalMessage = "{0}\n{1}\n\n{2}".format(blurbIntro.text, messageBody, blurbEnd.text)
-        return finalMessage.replace(ABConfig.REPLACE_COMPANY_STRING, company)
+        final_message = "{0}\n{1}\n\n{2}".format(blurb_intro.text, message_body, blurb_end.text)
+        return final_message.replace(ABConfig.REPLACE_COMPANY_STRING, company)
 
-    def pickBestBlurbs(self, jobDescription):
-        tokens = nltk.word_tokenize(jobDescription)
+    def pick_best_blurbs(self, job_description):
+        tokens = nltk.word_tokenize(job_description)
         word_list = set([word.lower() for word in tokens if word.isalpha()])
         # Remove stopwords (the, a)
-        filteredWords = [word for word in word_list if word not in nltk.corpus.stopwords.words('english')]
+        filtered_words = [word for word in word_list if word not in nltk.corpus.stopwords.words('english')]
         # Stem words
-        keyWords = [self.lemmatizer.lemmatize(word, 'v') for word in filteredWords]
+        key_words = [self.lemmatizer.lemmatize(word, 'v') for word in filtered_words]
 
-        blurbIdList = []
-        for word in keyWords:
-            tagQuery = Tag.select().where(Tag.text == word)
-            for tag in tagQuery:
-                blurbIdList.append(tag.blurb.id)
+        blurb_id_list = []
+        for word in key_words:
+            tag_query = Tag.select().where(Tag.text == word)
+            for tag in tag_query:
+                blurb_id_list.append(tag.blurb.id)
 
         # Avoid blurb repeats
-        return sorted(set(blurbIdList))
+        return sorted(set(blurb_id_list))
 
-    def readTagBlurbs(self, filePath):
+    def read_tag_blurbs(self, filePath):
         with open(filePath, "r") as f:
             content = f.read()
             list_list_tags = re.findall(ABConfig.REGEX_TAGS_CAPTURE, content)
@@ -145,5 +165,5 @@ Required experience:
 Angularjs: 1 year
 Django: 1 year'''
     a.resetAllTables()
-    a.readTagBlurbs('blurbs.txt')
-    print(a.generateMessage(desc, 'comp'))
+    a.read_tag_blurbs('blurbs.txt')
+    print(a.generate_message(desc, 'comp'))

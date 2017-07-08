@@ -38,7 +38,8 @@ class Question(BaseModel):
     answer = TextField(null=True)
     website = CharField(null=False)
     input_type = CharField(null=False)
-    question_type = CharField()
+    secondary_input_type = CharField(null=True)
+    question_type = CharField(null=True)
 """
 These next two models are for the application builder
 """

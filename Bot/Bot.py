@@ -1,6 +1,5 @@
 import time
 from urllib.parse import urlencode
-
 import peewee
 from bs4 import BeautifulSoup
 from selenium import webdriver, common
@@ -9,11 +8,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from ApplicationBuilder import ApplicationBuilder
-import helpers
+from helpers import Const, sleepAfterFunction
+from constants import HTML
 from models import Job, Question
 
 # TODO: Once project is ready to release move configs!
-class BotConfig(helpers.Const):
+class BotConfig(Const):
     WAIT_IMPLICIT = 2
     WAIT_DELTA = .100
     WAIT_LONG = 15
@@ -22,7 +22,7 @@ class BotConfig(helpers.Const):
     MAX_COUNT_APPLIED_JOBS = 100
 
 
-class IndeedConfig(helpers.Const):
+class IndeedConfig(Const):
     URL_LOGIN = r'https://secure.indeed.com/account/login?service=my&hl=en_CA&co=CA&continue=https%3A%2F%2Fwww.indeed.ca%2F'
     ID_INPUT_LOGIN_EMAIL = r'signin_email'
     ID_INPUT_LOGIN_PASSWORD = r'signin_password'
@@ -42,7 +42,7 @@ class IndeedConfig(helpers.Const):
         'fromage': 'any'
     }
 
-    class DIV_JOB(helpers.Const):
+    class DIV_JOB(Const):
         CLASSES = ['row', 'result']
         CLASS_JOB_LINK = 'jobtitle'
         EASY_APPLY = 'Easily apply'
@@ -83,7 +83,7 @@ class IndeedBot(object):
         if reloadTagsBlurbs:
             self.AB.resetAllTables()
             print('Initializing Tags and Blurbs from {0}'.format(userConfig.PATH_TAG_BLURBS))
-            self.AB.readTagBlurbs(userConfig.PATH_TAG_BLURBS)
+            self.AB.read_tag_blurbs(userConfig.PATH_TAG_BLURBS)
 
     def _handlePopup(self):
         try:
@@ -111,7 +111,7 @@ class IndeedBot(object):
 
         while True:
             soup = BeautifulSoup(self.driver.page_source, 'html.parser')
-            jobResultsSoup = soup.find_all('div', class_=IndeedConfig.DIV_JOB.CLASSES)
+            jobResultsSoup = soup.find_all(HTML.TagType.DIV, class_=IndeedConfig.DIV_JOB.CLASSES)
 
             self.storeJobs(jobResultsSoup)
 
@@ -119,7 +119,7 @@ class IndeedBot(object):
             if not nextPageExists:
                 break
 
-    @helpers.sleepAfterFunction(BotConfig.WAIT_MEDIUM)
+    @sleepAfterFunction(BotConfig.WAIT_MEDIUM)
     def _nextPage(self):
         try:
             self.driver.find_element_by_xpath(IndeedConfig.XPATH_BUTTON_NEXT_PAGE).click()
@@ -138,17 +138,17 @@ class IndeedBot(object):
         # Iterated through results and save to database
         for jobTag in jobResultsSoup:
             if IndeedConfig.DIV_JOB.EASY_APPLY in jobTag.text:
-                if len(jobTag.find_all('span', class_=IndeedConfig.DIV_JOB.CLASS_SPONSERED)) != 0:
-                    jobTitleSoup = jobTag.find_all('a', class_=IndeedConfig.DIV_JOB.CLASS_JOB_LINK)[0]
-                    jobLink = IndeedConfig.URL_BASE + jobTitleSoup['href']
+                if len(jobTag.find_all(HTML.TagType.SPAN, class_=IndeedConfig.DIV_JOB.CLASS_SPONSERED)) != 0:
+                    jobTitleSoup = jobTag.find_all(HTML.TagType.ANCHOR, class_=IndeedConfig.DIV_JOB.CLASS_JOB_LINK)[0]
+                    jobLink = IndeedConfig.URL_BASE + jobTitleSoup[HTML.Attributes.HREF]
                 else:
-                    jobTitleSoup = jobTag.find_all('h2', class_=IndeedConfig.DIV_JOB.CLASS_JOB_LINK)[0]
-                    jobLink = IndeedConfig.URL_BASE + jobTitleSoup.a['href']
+                    jobTitleSoup = jobTag.find_all(HTML.TagType.H2, class_=IndeedConfig.DIV_JOB.CLASS_JOB_LINK)[0]
+                    jobLink = IndeedConfig.URL_BASE + jobTitleSoup.a[HTML.Attributes.HREF]
 
                 jobId = jobTag['id']
                 # Format
-                jobCompany = jobTag.find('span', class_='company').text.strip()
-                jobLocation = jobTag.find('span', class_='location').text.strip()
+                jobCompany = jobTag.find(HTML.TagType.SPAN, class_='company').text.strip()
+                jobLocation = jobTag.find(HTML.TagType.SPAN, class_='location').text.strip()
                 jobTitle = jobTitleSoup.text.strip()
 
                 try:
@@ -176,7 +176,7 @@ class IndeedBot(object):
             self._applySingleJob(job)
             countApplied += 1
 
-    @helpers.sleepAfterFunction(BotConfig.WAIT_MEDIUM)
+    @sleepAfterFunction(BotConfig.WAIT_MEDIUM)
     def _applySingleJob(self, job):
         job.attempted = True
         if (job.easy_apply == True):
@@ -209,89 +209,54 @@ class IndeedBot(object):
         job.save()
 
     def fillApplication(self, job, dryRun = False):
-        def attachResume(logError = False):
-            try:
-                # TODO: Eventually get resume from application builder
-                self.driver.find_element_by_id(IndeedConfig.ID_BUTTON_RESUME).send_keys(self.userConfig.PATH_SOFTWARE_RESUME)
-                return True
-            except common.exceptions.NoSuchElementException as e:
-                if logError:
-                    job.error = str(e)
-                return False
+        def addQuestionsToDatabase(qElementLabels, qElements):
+            qDict = {}
+            for i in range(0, len(qLabels)):
+                currentLabel = qLabels[i]
+                currentElement = qElements[i]
+                qObject = Question(
+                    label=currentLabel,
+                    website=IndeedConfig.URL_BASE,
+                    input_type=currentElement.tag_name,
+                    secondary_input_type=currentElement.get_attribute(HTML.Attributes.TYPE)
+                )
+                self.AB.add_question_to_database(qObject)
 
-        def finalizeApplication(logError = False, dryRun = False):
-            try:
-                elApplyButton = self.driver.find_element_by_xpath(IndeedConfig.XPATH_BUTTON_APPLY)
-                if not dryRun:
-                    job.applied = True
-                    elApplyButton.click()
-                print('Successfully applied!')
-                return True
-            except common.exceptions.NoSuchElementException as e:
-                if logError:
-                    print(e)
-                    job.error = str(e)
-                return False
+        def answerQuestions(qDict):
+            """
+            Returns True if all questions successfully answered and False otherwise
+            :param qDict:
+            :return:
+            """
+            removeSet = set()
+            while True:
+                qNotVisible = False
+                for label, question in qDict.items():
+                    qAnswer = self.AB.answer_question(question)
+                    removeSet.add(question.label)
 
-        print('Attempting application for {0} with {1} at {2}'.format(job.title, job.company, job.location))
-        job.attempted = True
-
-        # Wait for applicant name field to load, if it's not there somethings wrong
-        if not doesElementExist(self.driver, IndeedConfig.ID_INPUT_APPLICANT_NAME, useXPath=False):
-            job.error = "Applicant name field not found"
-            return
-        self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_NAME).send_keys(self.userConfig.NAME)
-        self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_EMAIL).send_keys(self.userConfig.EMAIL)
-        self.driver.find_element_by_id(IndeedConfig.ID_INPUT_APPLICANT_PHONE).send_keys(self.userConfig.PHONE)
-
-        # FIRST CASE: No continue button - Easy Application
-        # Attach resume and cover letter (if possible), click apply
-        if not doesElementExist(self.driver, IndeedConfig.XPATH_BUTTON_CONT):
-            # If you can't attach a resume someting is seriously wrong!
-            if not attachResume(logError=True):
-                return
-
-            # Add cover letter
-            if doesElementExist(self.driver, IndeedConfig.ID_INPUT_COVER_LETTER, useXPath=False):
-                coverLetter = self.AB.generateMessage(job.description, job.company, containMinBlurbs=True)
-                if coverLetter is None:
-                    print('Not enough keyword matches')
-                    job.good_fit = False
-                else:
-                    self.driver.find_element_by_id(IndeedConfig.ID_INPUT_COVER_LETTER).send_keys(coverLetter)
-                    job.cover_letter = coverLetter
-                    if dryRun:
-                        print(coverLetter)
-                    finalizeApplication(logError=True)
-
-        # SECOND CASE: Continue button exists - We have to fill out additional information
-        # Also resume can either be on the first page or not?
-        else:
-            # TODO: Fill this out
-            # Get all question elements
-            elementsQuestionLabels = self.driver.find_elements_by_xpath(IndeedConfig.XPATH_ALL_QUESTION_LABELS)
-            elementsQuestionInputs = self.driver.find_elements_by_xpath(IndeedConfig.XPATH_ALL_QUESTION_INPUTS)
-            assert(len(elementsQuestionLabels) == len(elementsQuestionInputs))
-            allQuestionsAnswered = True
-            for i in range(0, len(elementsQuestionLabels)):
-                label = elementsQuestionLabels[i].get_attribute('innerText')
-                questionElement = elementsQuestionInputs[i]
-                try:
-                    question = Question.create(label=label, website=IndeedConfig.URL_BASE, type='experience')
-                    question.save()
-                # The question is already in the database
-                except peewee.IntegrityError as e:
-                    question = Question.get(Question.label == label)
-                    if len(question.answer) != 0:
-                        questionElement.send_keys(question.answer)
-                    else:
+                # TODO: Fill in
+                # All questions answered!
+                if len(removeSet) == 0 and len(qDict) == 0:
+                    break
+                # No more questions can be answered
+                elif len(removeSet) == 0:
+                    # Press continue
+                    if qNotVisible:
                         pass
+                    # Give up for now...
+                    else:
+                        break
+                # Remove answered questions
+                else:
+                    removeSet.clear()
+            return False
 
-            while not doesElementExist(self.driver, IndeedConfig.XPATH_BUTTON_APPLY):
-                # Attempt to attach a resume
-                break
+        qElementLabels = self.driver.find_elements_by_xpath(IndeedConfig.XPATH_ALL_QUESTION_LABELS)
+        qElementInputs = self.driver.find_elements_by_xpath(IndeedConfig.XPATH_ALL_QUESTION_INPUTS)
+        assert(len(qElementLabels) == len(qElementInputs))
+        qLabels = [qElementLabel.get_attribute('innerText') for qElementLabel in qElementLabels]
 
-        return
 
     @staticmethod
     def _createTables():
@@ -319,3 +284,6 @@ def doesElementExist(driver, identifer, useXPath = True):
 
     except common.exceptions.NoSuchElementException:
         return False
+
+if __name__ == "__main__":
+    Question.drop_table()
