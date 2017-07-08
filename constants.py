@@ -1,6 +1,8 @@
 from helpers import Const
 
+
 class HTML(Const):
+
     class TagType(Const):
         DIV = 'div'
         SPAN = 'span'
@@ -9,6 +11,7 @@ class HTML(Const):
         SELECT = 'select'
         H2 = 'h2'
         ANCHOR = 'a'
+
     class Attributes(Const):
         HREF = 'href'
         TYPE = 'type'

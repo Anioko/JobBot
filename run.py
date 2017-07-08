@@ -1,8 +1,8 @@
-from Bot import IndeedBot
+from Bot.IndeedBot import IndeedBot
 from userconfig import UserConfig
 
 if __name__ == "__main__":
-    bot = IndeedBot(UserConfig(),dryRun=False)
+    bot = IndeedBot(UserConfig(), dry_run=False)
     # bot.login()
     # bot.searchJobs()
     bot.applyJobs()

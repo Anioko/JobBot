@@ -1,23 +1,10 @@
 from models import Blurb, Tag
 from userconfig import UserConfig
-import helpers
 import nltk
 import re
 from models import Question
 import peewee
-
-
-class ABConfig(helpers.Const):
-    """
-    The two regex captures in this class determine how you should
-    format your file that contains tags and blurbs
-    """
-    REGEX_TAGS_CAPTURE = re.compile(r"'''(.*?)'''", re.DOTALL)
-    REGEX_BLURB_CAPTURE = re.compile(r'"""(.*?)"""', re.DOTALL)
-    START_TAG = 'start_tag'
-    END_TAG = 'end_tag'
-    REPLACE_COMPANY_STRING = r'{COMPANY}'
-    BULLET_POINT = "-"
+from Application.constants import ApplicationBuilderConstants as ABConstants
 
 
 class ApplicationBuilder:
@@ -60,8 +47,8 @@ class ApplicationBuilder:
         :param contain_min_blurbs:
         :return:
         """
-        intro_tag = Tag.get(Tag.text == ABConfig.START_TAG)
-        end_tag = Tag.get(Tag.text == ABConfig.END_TAG)
+        intro_tag = Tag.get(Tag.text == ABConstants.START_TAG)
+        end_tag = Tag.get(Tag.text == ABConstants.END_TAG)
 
         blurb_intro = Blurb.get(Blurb.id == intro_tag.blurb.id)
         blurb_end = Blurb.get(Blurb.id == end_tag.blurb.id)
@@ -74,10 +61,10 @@ class ApplicationBuilder:
 
         for b_id in best_blurb_ids:
             blurb = Blurb.get(Blurb.id == b_id)
-            message_body += ABConfig.BULLET_POINT + blurb.text + "\n"
+            message_body += ABConstants.BULLET_POINT + blurb.text + "\n"
 
         final_message = "{0}\n{1}\n\n{2}".format(blurb_intro.text, message_body, blurb_end.text)
-        return final_message.replace(ABConfig.REPLACE_COMPANY_STRING, company)
+        return final_message.replace(ABConstants.REPLACE_COMPANY_STRING, company)
 
     def pick_best_blurbs(self, job_description):
         tokens = nltk.word_tokenize(job_description)
@@ -99,8 +86,8 @@ class ApplicationBuilder:
     def read_tag_blurbs(self, filePath):
         with open(filePath, "r") as f:
             content = f.read()
-            list_list_tags = re.findall(ABConfig.REGEX_TAGS_CAPTURE, content)
-            list_blurbs = re.findall(ABConfig.REGEX_BLURB_CAPTURE, content)
+            list_list_tags = re.findall(ABConstants.REGEX_TAGS_CAPTURE, content)
+            list_blurbs = re.findall(ABConstants.REGEX_BLURB_CAPTURE, content)
             if len(list_list_tags) == len(list_blurbs):
                 for i in range(0, len(list_blurbs)):
                     list_tags = list_list_tags[i].split(',')

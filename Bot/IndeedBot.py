@@ -7,111 +7,54 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from ApplicationBuilder import ApplicationBuilder
-from helpers import Const, sleepAfterFunction
+from Application.ApplicationBuilder import ApplicationBuilder
+from helpers import sleepAfterFunction
 from constants import HTML
 from models import Job, Question
-
-# TODO: Once project is ready to release move configs!
-class BotConfig(Const):
-    WAIT_IMPLICIT = 2
-    WAIT_DELTA = .100
-    WAIT_LONG = 15
-    WAIT_MEDIUM = 7
-    WAIT_SHORT = 2
-    MAX_COUNT_APPLIED_JOBS = 100
-
-
-class IndeedConfig(Const):
-    URL_LOGIN = r'https://secure.indeed.com/account/login?service=my&hl=en_CA&co=CA&continue=https%3A%2F%2Fwww.indeed.ca%2F'
-    ID_INPUT_LOGIN_EMAIL = r'signin_email'
-    ID_INPUT_LOGIN_PASSWORD = r'signin_password'
-    URL_BASE = r'https://www.indeed.ca/'
-    URL_SEARCH = URL_BASE + r'jobs?'
-
-    # SEARCH STAGE
-
-    # Advanced search query
-    SEARCH_PARAMETERS = {
-        'as_any': 'software+develop+engineer+mechanical+mechatronics+programming+android+ios+technical+qa',
-        'as_not': 'market',
-        'jt': 'internship',
-        'limit': 50,
-        'psf': 'advsrch',
-        'radius': 100,
-        'fromage': 'any'
-    }
-
-    class DIV_JOB(Const):
-        CLASSES = ['row', 'result']
-        CLASS_JOB_LINK = 'jobtitle'
-        EASY_APPLY = 'Easily apply'
-        CLASS_SPONSERED = 'sponsoredGray'
-        XPATH_COMPANY_NAME = r"//"
-
-    XPATH_BUTTON_NEXT_PAGE = r"//div[contains(@class, 'pagination')]//span[contains(text(), 'Next')]"
-    ID_POPUP = 'popover-foreground'
-
-    # APPLICATION STAGE
-    XPATH_APPLY_SPAN = r"//span[contains(@class, 'indeed-apply-button-label')]"
-    ID_INPUT_APPLICANT_NAME = 'applicant.name'
-    ID_INPUT_APPLICANT_EMAIL = 'applicant.email'
-    ID_INPUT_APPLICANT_PHONE = 'applicant.phoneNumber'
-    ID_BUTTON_RESUME = 'resume'
-    ID_INPUT_COVER_LETTER = 'applicant.applicationMessage'
-    XPATH_BUTTON_CONT = r"//div[contains(@id,'continue-div')]//div//a"
-    XPATH_BUTTON_APPLY = r"//div[contains(@id,'apply-div')]//div//input"
-
-    # If the continue button is present
-    # TODO: How do we use 'or' here?
-    XPATH_ALL_QUESTION_LABELS = r"//div[contains(@class, 'input-container')]//label"
-    XPATH_ALL_QUESTION_INPUTS = r"//div[contains(@class, 'input-container')]//input | " \
-                          r"//div[contains(@class, 'input-container')]//select | " \
-                          r"//div[contains(@class, 'input-container')]//textarea"
-
+from Bot.constants import BotConstants, IndeedConstants
 
 class IndeedBot(object):
-    def __init__(self, userConfig, dryRun=False, reloadTagsBlurbs=True):
-        self.DRY_RUN = dryRun
-        self.userConfig = userConfig
+    def __init__(self, user_config, dry_run=False, reload_tags_blurbs=True):
+        self.DRY_RUN = dry_run
+        self.user_config = user_config
         self.driver = webdriver.Firefox()
-        self.driver.implicitly_wait(BotConfig.WAIT_IMPLICIT)
-        self.AB = ApplicationBuilder(userConfig)
+        self.driver.implicitly_wait(BotConstants.WAIT_IMPLICIT)
+        self.application_builder = ApplicationBuilder(user_config)
 
         self._createTables()
 
-        if reloadTagsBlurbs:
-            self.AB.resetAllTables()
-            print('Initializing Tags and Blurbs from {0}'.format(userConfig.PATH_TAG_BLURBS))
-            self.AB.read_tag_blurbs(userConfig.PATH_TAG_BLURBS)
+        if reload_tags_blurbs:
+            self.application_builder.resetAllTables()
+            print('Initializing Tags and Blurbs from {0}'.format(user_config.PATH_TAG_BLURBS))
+            self.application_builder.read_tag_blurbs(user_config.PATH_TAG_BLURBS)
 
-    def _handlePopup(self):
+    def _handle_popup(self):
         try:
             # Just to ensure that there is a popup
-            self.driver.find_element_by_id(IndeedConfig.ID_POPUP)
+            self.driver.find_element_by_id(IndeedConstants.ID_POPUP)
             webdriver.ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
         except common.exceptions.NoSuchElementException:
             pass
 
     def login(self):
-        self.driver.get(IndeedConfig.URL_LOGIN)
-        elEmail = self.driver.find_element_by_id(IndeedConfig.ID_INPUT_LOGIN_EMAIL)
-        elEmail.send_keys(self.userConfig.EMAIL)
-        self.driver.find_element_by_id(IndeedConfig.ID_INPUT_LOGIN_PASSWORD).send_keys(self.userConfig.PASSWORD)
+        self.driver.get(IndeedConstants.URL_LOGIN)
+        elEmail = self.driver.find_element_by_id(IndeedConstants.ID_INPUT_LOGIN_EMAIL)
+        elEmail.send_keys(self.user_config.EMAIL)
+        self.driver.find_element_by_id(IndeedConstants.ID_INPUT_LOGIN_PASSWORD).send_keys(self.user_config.PASSWORD)
         elEmail.submit()
 
-        while (self.driver.current_url != IndeedConfig.URL_BASE):
-            time.sleep(BotConfig.WAIT_DELTA)
+        while (self.driver.current_url != IndeedConstants.URL_BASE):
+            time.sleep(BotConstants.WAIT_DELTA)
 
-    def searchJobs(self):
+    def search_jobs(self):
         # Apparently the difference between %2B and + matters in the search query
-        urlArgs = urlencode(IndeedConfig.SEARCH_PARAMETERS).replace('%2B', '+')
-        searchURL = IndeedConfig.URL_SEARCH + urlArgs
+        urlArgs = urlencode(IndeedConstants.SEARCH_PARAMETERS).replace('%2B', '+')
+        searchURL = IndeedConstants.URL_SEARCH + urlArgs
         self.driver.get(searchURL)
 
         while True:
             soup = BeautifulSoup(self.driver.page_source, 'html.parser')
-            jobResultsSoup = soup.find_all(HTML.TagType.DIV, class_=IndeedConfig.DIV_JOB.CLASSES)
+            jobResultsSoup = soup.find_all(HTML.TagType.DIV, class_=IndeedConstants.DIV_JOB.CLASSES)
 
             self.storeJobs(jobResultsSoup)
 
@@ -119,12 +62,12 @@ class IndeedBot(object):
             if not nextPageExists:
                 break
 
-    @sleepAfterFunction(BotConfig.WAIT_MEDIUM)
+    @sleepAfterFunction(BotConstants.WAIT_MEDIUM)
     def _nextPage(self):
         try:
-            self.driver.find_element_by_xpath(IndeedConfig.XPATH_BUTTON_NEXT_PAGE).click()
+            self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_NEXT_PAGE).click()
             # Right after pressing next a popup alert usually happens
-            self._handlePopup()
+            self._handle_popup()
             return True
 
         except common.exceptions.NoSuchElementException:
@@ -137,13 +80,13 @@ class IndeedBot(object):
 
         # Iterated through results and save to database
         for jobTag in jobResultsSoup:
-            if IndeedConfig.DIV_JOB.EASY_APPLY in jobTag.text:
-                if len(jobTag.find_all(HTML.TagType.SPAN, class_=IndeedConfig.DIV_JOB.CLASS_SPONSERED)) != 0:
-                    jobTitleSoup = jobTag.find_all(HTML.TagType.ANCHOR, class_=IndeedConfig.DIV_JOB.CLASS_JOB_LINK)[0]
-                    jobLink = IndeedConfig.URL_BASE + jobTitleSoup[HTML.Attributes.HREF]
+            if IndeedConstants.DIV_JOB.EASY_APPLY in jobTag.text:
+                if len(jobTag.find_all(HTML.TagType.SPAN, class_=IndeedConstants.DIV_JOB.CLASS_SPONSERED)) != 0:
+                    jobTitleSoup = jobTag.find_all(HTML.TagType.ANCHOR, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LINK)[0]
+                    jobLink = IndeedConstants.URL_BASE + jobTitleSoup[HTML.Attributes.HREF]
                 else:
-                    jobTitleSoup = jobTag.find_all(HTML.TagType.H2, class_=IndeedConfig.DIV_JOB.CLASS_JOB_LINK)[0]
-                    jobLink = IndeedConfig.URL_BASE + jobTitleSoup.a[HTML.Attributes.HREF]
+                    jobTitleSoup = jobTag.find_all(HTML.TagType.H2, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LINK)[0]
+                    jobLink = IndeedConstants.URL_BASE + jobTitleSoup.a[HTML.Attributes.HREF]
 
                 jobId = jobTag['id']
                 # Format
@@ -169,14 +112,14 @@ class IndeedBot(object):
 
         jobs = Job.select().where(Job.applied == False)
         for job in jobs:
-            if countApplied > BotConfig.MAX_COUNT_APPLIED_JOBS:
+            if countApplied > BotConstants.MAX_COUNT_APPLIED_JOBS:
                 print('Max job apply limit reached')
                 break
 
             self._applySingleJob(job)
             countApplied += 1
 
-    @sleepAfterFunction(BotConfig.WAIT_MEDIUM)
+    @sleepAfterFunction(BotConstants.WAIT_MEDIUM)
     def _applySingleJob(self, job):
         job.attempted = True
         if (job.easy_apply == True):
@@ -185,7 +128,7 @@ class IndeedBot(object):
                 # Fill job information
                 job.description = self.driver.find_element_by_id('job_summary').text
 
-                elApply = self.driver.find_element_by_xpath(IndeedConfig.XPATH_APPLY_SPAN)
+                elApply = self.driver.find_element_by_xpath(IndeedConstants.XPATH_APPLY_SPAN)
                 elApply.click()
 
                 # TODO: Find better way to do this!
@@ -216,11 +159,11 @@ class IndeedBot(object):
                 currentElement = qElements[i]
                 qObject = Question(
                     label=currentLabel,
-                    website=IndeedConfig.URL_BASE,
+                    website=IndeedConstants.URL_BASE,
                     input_type=currentElement.tag_name,
                     secondary_input_type=currentElement.get_attribute(HTML.Attributes.TYPE)
                 )
-                self.AB.add_question_to_database(qObject)
+                self.application_builder.add_question_to_database(qObject)
 
         def answerQuestions(qDict):
             """
@@ -232,7 +175,7 @@ class IndeedBot(object):
             while True:
                 qNotVisible = False
                 for label, question in qDict.items():
-                    qAnswer = self.AB.answer_question(question)
+                    qAnswer = self.application_builder.answer_question(question)
                     removeSet.add(question.label)
 
                 # TODO: Fill in
@@ -252,8 +195,8 @@ class IndeedBot(object):
                     removeSet.clear()
             return False
 
-        qElementLabels = self.driver.find_elements_by_xpath(IndeedConfig.XPATH_ALL_QUESTION_LABELS)
-        qElementInputs = self.driver.find_elements_by_xpath(IndeedConfig.XPATH_ALL_QUESTION_INPUTS)
+        qElementLabels = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_LABELS)
+        qElementInputs = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_INPUTS)
         assert(len(qElementLabels) == len(qElementInputs))
         qLabels = [qElementLabel.get_attribute('innerText') for qElementLabel in qElementLabels]
 
