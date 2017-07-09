@@ -25,6 +25,7 @@ class ApplicationBuilderConstants(Const):
         MESSAGE = 'cover letter'
         LOCATION = 'located'
         EXPERIENCE = 'experience'
+        EDUCATION = 'education'
         LIST_CONTACT_INFO = ['name', 'email', 'phone number']
 
     # TODO: Use custom field in peewee
@@ -34,3 +35,4 @@ class ApplicationBuilderConstants(Const):
         LOCATION = 'location'
         EXPERIENCE = 'experience'
         CONTACT_INFO = 'contact_info'
+        EDUCATION = 'education'

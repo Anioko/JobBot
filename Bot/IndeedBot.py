@@ -192,7 +192,15 @@ class IndeedBot(object):
 
                     if q_answer is None:
                         unable_to_answer = True
+
                     else:
+                        if qle.element.get_attribute(HTML.Attributes.TYPE) == HTML.INPUT_TYPES.RADIO:
+                            #TODO: Create xpath to find correct radio button such that
+                            # -input element with name == qle.element.get_attribute('name') AND
+                            # -sibling element span with innerText == q_answer
+                            # click that element
+                            # ACTUAL EXAMPLE
+                            # "//span[text()='Yes']/preceding-sibling::input[@name='q_e2f87cad505ed3cc1f04c5dbd71c9be4']"
                         try:
                             qle.element.send_keys(q_answer)
                             remove_labels.add(qle.label)
@@ -215,6 +223,8 @@ class IndeedBot(object):
 
         q_element_labels = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_LABELS)
         q_element_inputs = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_INPUTS)
+        # Make grouped radio buttons into only one element, using the name attribute
+        q_element_inputs = remove_grouped_elements_by_attribute(q_element_inputs, 'name')
         assert(len(q_element_labels) == len(q_element_inputs))
         list_question_label_element = []
         for i in range(0, len(q_element_labels)):
@@ -241,6 +251,19 @@ class IndeedBot(object):
 
     def shut_down(self):
         self.driver.close()
+
+
+def remove_grouped_elements_by_attribute(html_elements, attribute):
+    copy_elements = list(html_elements)
+    previous_attribute = ''
+    for i in range(len(copy_elements)-1, -1, -1):
+        current_element = copy_elements[i]
+        current_attribute = current_element.get_attribute(attribute)
+        if previous_attribute == current_attribute:
+            copy_elements.pop(i+1)
+        previous_attribute = current_attribute
+
+    return copy_elements
 
 
 def does_element_exist(driver, identifier, useXPath = True):

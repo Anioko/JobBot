@@ -48,6 +48,9 @@ class ApplicationBuilder:
             elif ABConstants.QuestionNeedle.EXPERIENCE in q.label:
                 q.question_type = ABConstants.QuestionTypes.EXPERIENCE
 
+            elif ABConstants.QuestionNeedle.EDUCATION in q.label:
+                q.question_type = ABConstants.QuestionTypes.EXPERIENCE
+
             elif any(string in q.label for string in ABConstants.QuestionNeedle.LIST_CONTACT_INFO):
                 q.question_type = ABConstants.QuestionTypes.CONTACT_INFO
 
