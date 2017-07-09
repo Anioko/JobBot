@@ -11,7 +11,7 @@ from models import Job, Question
 from Bot.constants import BotConstants, IndeedConstants
 from collections import namedtuple
 
-QuestionLabelElement = namedtuple('QuestionLabelElement','label element')
+QuestionLabelElement = namedtuple('QuestionLabelElement', 'label element')
 
 
 class IndeedBot(object):
@@ -25,7 +25,7 @@ class IndeedBot(object):
         self._create_tables()
 
         if reload_tags_blurbs:
-            self.application_builder.resetAllTables()
+            self.application_builder.reset_all_tables()
             print('Initializing Tags and Blurbs from {0}'.format(user_config.PATH_TAG_BLURBS))
             self.application_builder.read_tag_blurbs(user_config.PATH_TAG_BLURBS)
 
@@ -83,7 +83,8 @@ class IndeedBot(object):
         for job_tag in job_results_soup:
             if IndeedConstants.DIV_JOB.EASY_APPLY in job_tag.text:
                 if len(job_tag.find_all(HTML.TagType.SPAN, class_=IndeedConstants.DIV_JOB.CLASS_SPONSORED)) != 0:
-                    job_title_soup = job_tag.find_all(HTML.TagType.ANCHOR, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LINK)[0]
+                    job_title_soup = \
+                    job_tag.find_all(HTML.TagType.ANCHOR, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LINK)[0]
                     job_link = IndeedConstants.URL_BASE + job_title_soup[HTML.Attributes.HREF]
                 else:
                     job_title_soup = job_tag.find_all(HTML.TagType.H2, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LINK)[0]
@@ -91,8 +92,10 @@ class IndeedBot(object):
 
                 job_id = job_tag[HTML.Attributes.ID]
                 # Format
-                job_company = job_tag.find(HTML.TagType.SPAN, class_=IndeedConstants.DIV_JOB.CLASS_JOB_COMPANY).text.strip()
-                job_location = job_tag.find(HTML.TagType.SPAN, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LOCATION).text.strip()
+                job_company = job_tag.find(HTML.TagType.SPAN,
+                                           class_=IndeedConstants.DIV_JOB.CLASS_JOB_COMPANY).text.strip()
+                job_location = job_tag.find(HTML.TagType.SPAN,
+                                            class_=IndeedConstants.DIV_JOB.CLASS_JOB_LOCATION).text.strip()
                 job_title = job_title_soup.text.strip()
 
                 try:
@@ -160,7 +163,7 @@ class IndeedBot(object):
 
         job.save()
 
-    def fill_application(self, job, dry_run=False):
+    def fill_application(self, job: Job, dry_run=False):
         def add_questions_to_database(list_qle):
             """
             Passes a question model object to application builder to add to database
@@ -194,15 +197,17 @@ class IndeedBot(object):
                         unable_to_answer = True
 
                     else:
-                        if qle.element.get_attribute(HTML.Attributes.TYPE) == HTML.INPUT_TYPES.RADIO:
-                            #TODO: Create xpath to find correct radio button such that
-                            # -input element with name == qle.element.get_attribute('name') AND
-                            # -sibling element span with innerText == q_answer
-                            # click that element
-                            # ACTUAL EXAMPLE
-                            # "//span[text()='Yes']/preceding-sibling::input[@name='q_e2f87cad505ed3cc1f04c5dbd71c9be4']"
                         try:
-                            qle.element.send_keys(q_answer)
+                            if qle.element.get_attribute(HTML.Attributes.TYPE) == HTML.INPUT_TYPES.RADIO:
+                                radio_name = qle.element.get_attribute(HTML.Attributes.NAME)
+                                radio_button_xpath = IndeedConstants.compute_xpath_radio_button(
+                                    IndeedConstants.UNFORMATTED_XPATH_RADIO_OPTION,
+                                    q_answer,
+                                    radio_name
+                                )
+                                self.driver.find_element_by_xpath(radio_button_xpath).click()
+                            else:
+                                qle.element.send_keys(q_answer)
                             remove_labels.add(qle.label)
                         except common.exceptions.ElementNotInteractableException:
                             q_not_visible = True
@@ -212,6 +217,7 @@ class IndeedBot(object):
                     return True
                 # Stuck on a question with no answer
                 elif unable_to_answer:
+                    job.error = BotConstants.String.UNABLE_TO_ANSWER
                     break
                 # Remove answered questions
                 else:
@@ -225,13 +231,13 @@ class IndeedBot(object):
         q_element_inputs = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_INPUTS)
         # Make grouped radio buttons into only one element, using the name attribute
         q_element_inputs = remove_grouped_elements_by_attribute(q_element_inputs, 'name')
-        assert(len(q_element_labels) == len(q_element_inputs))
+        assert (len(q_element_labels) == len(q_element_inputs))
         list_question_label_element = []
         for i in range(0, len(q_element_labels)):
             formatted_label = q_element_labels[i].get_attribute(HTML.Attributes.INNER_TEXT).lower().strip()
             list_question_label_element.append(
                 QuestionLabelElement(
-                    label= formatted_label,
+                    label=formatted_label,
                     element=q_element_inputs[i]
                 )
             )
@@ -239,8 +245,9 @@ class IndeedBot(object):
         if answer_questions(list_question_label_element):
             self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_APPLY).click()
             job.applied = True
-            print('Successfully applied to {0} with {1} at {2}'.format(job.title, job.company, job.location))
-
+            print(BotConstants.successful_application(job))
+        else:
+            print(BotConstants.failed_application(job, job.error))
         return
 
     @staticmethod
@@ -256,17 +263,17 @@ class IndeedBot(object):
 def remove_grouped_elements_by_attribute(html_elements, attribute):
     copy_elements = list(html_elements)
     previous_attribute = ''
-    for i in range(len(copy_elements)-1, -1, -1):
+    for i in range(len(copy_elements) - 1, -1, -1):
         current_element = copy_elements[i]
         current_attribute = current_element.get_attribute(attribute)
         if previous_attribute == current_attribute:
-            copy_elements.pop(i+1)
+            copy_elements.pop(i + 1)
         previous_attribute = current_attribute
 
     return copy_elements
 
 
-def does_element_exist(driver, identifier, useXPath = True):
+def does_element_exist(driver, identifier, useXPath=True):
     """
     Function that checks if a element exists on the page
     :param driver: selenium.webdriver
@@ -283,6 +290,7 @@ def does_element_exist(driver, identifier, useXPath = True):
 
     except common.exceptions.NoSuchElementException:
         return False
+
 
 if __name__ == "__main__":
     Question.drop_table()

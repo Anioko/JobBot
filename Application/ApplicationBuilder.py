@@ -5,7 +5,7 @@ import re
 from models import Question
 import peewee
 from Application.constants import ApplicationBuilderConstants as ABConstants
-
+import typing
 
 class ApplicationBuilder:
     def __init__(self, user_config):
@@ -34,22 +34,26 @@ class ApplicationBuilder:
                     raise NotImplementedError
         return None
 
-    def add_question_to_database(self, q_object):
-        def _categorize_question(q):
+    @staticmethod
+    def add_question_to_database(q_object: Question):
+        def _categorize_question(q: Question):
             if ABConstants.QuestionNeedle.RESUME in q.label:
                 q.question_type = ABConstants.QuestionTypes.RESUME
 
             elif ABConstants.QuestionNeedle.MESSAGE in q.label:
                 q.question_type = ABConstants.QuestionTypes.MESSAGE
 
-            elif ABConstants.QuestionNeedle.LOCATION in q.label:
+            elif any(string in q.label for string in ABConstants.QuestionNeedle.LIST_LOCATION):
                 q.question_type = ABConstants.QuestionTypes.LOCATION
 
             elif ABConstants.QuestionNeedle.EXPERIENCE in q.label:
                 q.question_type = ABConstants.QuestionTypes.EXPERIENCE
 
-            elif ABConstants.QuestionNeedle.EDUCATION in q.label:
-                q.question_type = ABConstants.QuestionTypes.EXPERIENCE
+            elif any(string in q.label for string in ABConstants.QuestionNeedle.LIST_EDUCATION):
+                q.question_type = ABConstants.QuestionTypes.EDUCATION
+
+            elif ABConstants.QuestionNeedle.LANGUAGE in q.label:
+                q.question_type = ABConstants.QuestionTypes.LANGUAGE
 
             elif any(string in q.label for string in ABConstants.QuestionNeedle.LIST_CONTACT_INFO):
                 q.question_type = ABConstants.QuestionTypes.CONTACT_INFO
@@ -68,7 +72,7 @@ class ApplicationBuilder:
         except peewee.IntegrityError:
             pass
 
-    def generate_message(self, description, company, contain_min_blurbs=False):
+    def generate_message(self, description: str, company: str, contain_min_blurbs=False) -> typing.Optional[str]:
         """
         Returns a generated message based on the job description and company
         If 'containMinBlurbs' == True, then return None if not enough tags are in description
@@ -97,7 +101,7 @@ class ApplicationBuilder:
         final_message = "{0}\n{1}\n\n{2}".format(blurb_intro.text, message_body, blurb_end.text)
         return final_message.replace(ABConstants.REPLACE_COMPANY_STRING, company)
 
-    def pick_best_blurbs(self, job_description):
+    def pick_best_blurbs(self, job_description: str) -> typing.List[str]:
         tokens = nltk.word_tokenize(job_description)
         word_list = set([word.lower() for word in tokens if word.isalpha()])
         # Remove stopwords (the, a)
@@ -114,42 +118,43 @@ class ApplicationBuilder:
         # Avoid blurb repeats
         return sorted(set(blurb_id_list))
 
-    def read_tag_blurbs(self, filePath):
-        with open(filePath, "r") as f:
+    def read_tag_blurbs(self, file_path: str):
+        with open(file_path, "r") as f:
             content = f.read()
             list_list_tags = re.findall(ABConstants.REGEX_TAGS_CAPTURE, content)
             list_blurbs = re.findall(ABConstants.REGEX_BLURB_CAPTURE, content)
             if len(list_list_tags) == len(list_blurbs):
                 for i in range(0, len(list_blurbs)):
                     list_tags = list_list_tags[i].split(',')
-                    blurbId = self.createBlurb(list_blurbs[i].strip())
-                    self.addTagsToBlurb(list_tags, blurbId)
+                    blurbId = self.create_blurb(list_blurbs[i].strip())
+                    self.add_tags_to_blurb(list_tags, blurbId)
             else:
                 print('Length of tags and blurbs do not match. Perhaps you have a formatting error?')
 
-    def getBlurbs(self):
+    def get_blurbs(self):
         return Blurb.select()
 
-    def getTags(self):
+    def get_tags(self):
         return Tag.select()
 
-    def createBlurb(self, blurb):
+    def create_blurb(self, blurb: Blurb) -> int:
         b = Blurb.create(text = blurb)
         return b.id
 
-    def addTagsToBlurb(self, tags, blurbId):
-        query = Blurb.select().where(Blurb.id == blurbId)
+    def add_tags_to_blurb(self, tags, blurb_id: int):
+        query = Blurb.select().where(Blurb.id == blurb_id)
         if query.exists():
             for tag in tags:
-                self._addTagToBlurb(tag, blurbId)
+                self._add_tag_to_blurb(tag, blurb_id)
         else:
-            print('Blurb id: {0} is not in the database!'.format(blurbId))
+            print('Blurb id: {0} is not in the database!'.format(blurb_id))
 
-    def _addTagToBlurb(self, tag, blurbId):
-        b = Blurb.select().where(Blurb.id == blurbId)
-        t = Tag.create(text=tag.lower().strip(), blurb=b)
+    def _add_tag_to_blurb(self, tag, blurb_id):
+        b = Blurb.select().where(Blurb.id == blurb_id)
+        Tag.create(text=tag.lower().strip(), blurb=b)
 
-    def resetAllTables(self):
+    @staticmethod
+    def reset_all_tables():
         Tag.drop_table()
         Blurb.drop_table()
 
@@ -169,19 +174,11 @@ We'd love to work with someone who:
 - Is proud of their work and loves challenges
 - Is willing to meet in person regularly
 - Loves to share knowledge and exchange ideas
-What we have to offer:
-- A chance to learn from an early stage startup that you could use to build your own (or find work at a more established startup)
-- Opportunity to contribute to laying the foundation of a startup
-- A collaborative environment where we set ambitious goals
-- Work with a small team and learn from people with diverse skills and backgrounds
-- A travel stipend of $150/month for full time interns
-- Excellent experience that should allow you to show employers solid skills as a developer in 2-3 months
-Job Type: Internship
 Job Location:
 Toronto, ON
 Required experience:
 Angularjs: 1 year
 Django: 1 year'''
-    a.resetAllTables()
+    a.reset_all_tables()
     a.read_tag_blurbs('blurbs.txt')
     print(a.generate_message(desc, 'comp'))

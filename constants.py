@@ -17,6 +17,7 @@ class HTML(Const):
         TYPE = 'type'
         ID = 'id'
         INNER_TEXT = 'innerText'
+        NAME = 'name'
 
     class INPUT_TYPES(Const):
         RADIO = 'radio'

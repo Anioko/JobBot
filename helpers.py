@@ -42,17 +42,18 @@ def _parametrized(dec):
 def sleep_after_function(func, waitTime):
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
-        randomWaitTime = random.uniform(waitTime * .9, waitTime * 1.2)
-        time.sleep(randomWaitTime)
+        random_wait_time = random.uniform(waitTime * .9, waitTime * 1.2)
+        time.sleep(random_wait_time)
         return result
 
     return wrapper
 
+
 @_parametrized
 def sleep_before_function(func, waitTime, waitDelta):
     def wrapper(*args, **kwargs):
-        randomWaitTime = random.uniform(waitTime * .9, waitTime * 1.2)
-        time.sleep(randomWaitTime)
+        random_wait_time = random.uniform(waitTime * .9, waitTime * 1.2)
+        time.sleep(random_wait_time)
         return func(*args, **kwargs)
 
     return wrapper
