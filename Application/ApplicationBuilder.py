@@ -6,7 +6,7 @@ from models import Question
 import peewee
 from Application.constants import ApplicationBuilderConstants as ABConstants
 import typing
-
+from models import Job
 
 class ApplicationBuilder:
     def __init__(self, user_config):
@@ -14,31 +14,50 @@ class ApplicationBuilder:
         Blurb.create_table(fail_silently=True)
         Tag.create_table(fail_silently=True)
         self.user_config = user_config
-        self.lemmatizer = nltk.stem.WordNetLemmatizer()
 
     # TODO: Implement a function that can decide which resume to send
     def generate_resume(self, description):
         raise NotImplementedError
 
-    def answer_question(self, job, question_label, default_experience_answer=False):
+    def answer_question(self, job: Job, question_label: str, default_experience_answer=False):
+        """
+        This function attempts to answer the question given just it's label
+        1. If the question is asking for a cover-letter it will generate one base on the job description
+        2. If the question is already in the database it will return the 'answer' field, which may be empty
+        3. If it is asking for experience and there is no answer in the database, you can specify a default answer
+        :param job:
+        :param question_label:
+        :param default_experience_answer:
+        :return:
+        """
         if ABConstants.QuestionNeedle.MESSAGE in question_label:
-            return self.generate_message(job.description, job.company)
+            job.message = self.generate_message(job.description, job.company)
+            return job.message
 
         try:
             question = Question.get(Question.label == question_label)
+            if question.answer is None and question.label == ABConstants.QuestionTypes.EXPERIENCE:
+                if default_experience_answer:
+                    return UserConfig.DEFAULT_YEARS_EXPERIENCE
+
             return question.answer
 
         except peewee.DoesNotExist:
-            if ABConstants.QuestionNeedle.EXPERIENCE in question_label:
-                # TODO: Make a default answer
-                if default_experience_answer:
-                    raise NotImplementedError
+            pass
+
         return None
+
+    @staticmethod
+    def get_question_from_label(question_label: str ) -> typing.Optional[Question]:
+        try:
+            return Question.get(Question.label == question_label)
+        except peewee.DoesNotExist:
+            return None
 
     @staticmethod
     def add_question_to_database(q_object: Question):
         def _categorize_question(q: Question):
-            # TODO: Change all these to any()
+            # TODO: Change all these to any
             if ABConstants.QuestionNeedle.RESUME in q.label:
                 q.question_type = ABConstants.QuestionTypes.RESUME
 
@@ -77,7 +96,7 @@ class ApplicationBuilder:
         except peewee.IntegrityError:
             pass
 
-    def generate_message(self, description: str, company: str, contain_min_blurbs=False) -> typing.Optional[str]:
+    def generate_message(self, description: str, company: str, contain_min_blurbs=True) -> typing.Optional[str]:
         """
         Returns a generated message based on the job description and company
         If 'containMinBlurbs' == True, then return None if not enough tags are in description
@@ -129,19 +148,22 @@ class ApplicationBuilder:
             if len(list_list_tags) == len(list_blurbs):
                 for i in range(0, len(list_blurbs)):
                     list_tags = list_list_tags[i].split(',')
-                    blurbId = self.create_blurb(list_blurbs[i].strip())
-                    self.add_tags_to_blurb(list_tags, blurbId)
+                    blurb_id = self.create_blurb(list_blurbs[i].strip())
+                    self.add_tags_to_blurb(list_tags, blurb_id)
             else:
                 print('Length of tags and blurbs do not match. Perhaps you have a formatting error?')
 
-    def get_blurbs(self):
+    @staticmethod
+    def get_blurbs():
         return Blurb.select()
 
-    def get_tags(self):
+    @staticmethod
+    def get_tags():
         return Tag.select()
 
-    def create_blurb(self, blurb: Blurb) -> int:
-        b = Blurb.create(text = blurb)
+    @staticmethod
+    def create_blurb(blurb_text: str) -> int:
+        b = Blurb.create(text=blurb_text)
         return b.id
 
     def add_tags_to_blurb(self, tags, blurb_id: int):
@@ -152,7 +174,8 @@ class ApplicationBuilder:
         else:
             print('Blurb id: {0} is not in the database!'.format(blurb_id))
 
-    def _add_tag_to_blurb(self, tag, blurb_id):
+    @staticmethod
+    def _add_tag_to_blurb(tag, blurb_id):
         b = Blurb.select().where(Blurb.id == blurb_id)
         Tag.create(text=tag.lower().strip(), blurb=b)
 

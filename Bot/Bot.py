@@ -3,6 +3,7 @@ from models import Job, Question
 from selenium import webdriver
 from Application.ApplicationBuilder import ApplicationBuilder
 from Bot.constants import BotConstants
+from datetime import datetime
 
 
 class Bot(ABC):
@@ -23,6 +24,7 @@ class Bot(ABC):
     @staticmethod
     def attempt_application(job: Job) -> str:
         job.attempted = True
+        job.access_date = datetime.now().date()
         string = 'Attempting application for {0} with {1} at {2}'.format(job.title, job.company, job.location)
         print(string)
         return string

@@ -14,7 +14,7 @@ class Job(BaseModel):
     # Job fields
     job_key = TextField(primary_key=True)
     link = TextField()
-    title = TextField()
+    title = CharField()
     description = TextField(null=True)
     company = TextField()
     city = CharField()
@@ -22,13 +22,14 @@ class Job(BaseModel):
     country = CharField()
     posted_date = DateField()
     expired = BooleanField(default=False)
+    location = CharField()
 
     # Application fields
     easy_apply = BooleanField(default=False)
     applied = BooleanField(default=False)
     access_date = DateField(null=True)
     error = TextField(null=True)
-    cover_letter = TextField(null=True)
+    message = TextField(null=True)
     good_fit = BooleanField(default=True)
 
 

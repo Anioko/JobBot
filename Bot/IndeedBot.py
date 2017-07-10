@@ -1,10 +1,5 @@
-import time
-from urllib.parse import urlencode
 import peewee
-from bs4 import BeautifulSoup
 from selenium import webdriver, common
-from selenium.webdriver.common.keys import Keys
-from Application.ApplicationBuilder import ApplicationBuilder
 from helpers import sleep_after_function
 from constants import HTML
 from models import Job, Question
@@ -26,13 +21,13 @@ class IndeedBot(Bot):
         client = IndeedClient(publisher=self.user_config.INDEED_API_KEY)
         search_response = client.search(**params)
 
-        count_total_job_results = search_response['totalResults']
-        num_loops = int(count_total_job_results/IndeedConstants.MAX_NUM_RESULTS_PER_REQUEST)
+        total_number_hits = search_response['totalResults']
+        num_loops = int(total_number_hits / IndeedConstants.MAX_NUM_RESULTS_PER_REQUEST)
         start = 0
-
+        print('Total number of hits: {0}'.format(total_number_hits))
         count_jobs_added = 0
         for i in range(0, num_loops):
-            # We can get around MAX_NUM_RESULTS_PER_REQUEST by increasing our start location
+            # We can get around MAX_NUM_RESULTS_PER_REQUEST by increasing our start location on each loop!
             params['start'] = start
             search_response = client.search(**params)
             job_results = search_response['results']
@@ -48,6 +43,7 @@ class IndeedBot(Bot):
                             city=job_result['city'],
                             state=job_result['state'],
                             country=job_result['country'],
+                            location=job_result['formattedLocation'],
                             posted_date=parsed_date.date(),
                             expired=job_result['expired'],
                             easy_apply=job_result['indeedApply']
@@ -61,7 +57,7 @@ class IndeedBot(Bot):
     def apply_jobs(self):
         count_applied = 0
 
-        jobs = Job.select().where(Job.applied is False)
+        jobs = Job.select().where(Job.applied == False).where(Job.good_fit == True)
         for job in jobs:
             if count_applied > BotConstants.MAX_COUNT_APPLIED_JOBS:
                 print('Max job apply limit reached')
@@ -137,6 +133,7 @@ class IndeedBot(Bot):
                 unable_to_answer = False
                 for i in range(0, len(list_qle)):
                     qle = list_qle[i]
+
                     q_answer = self.application_builder.answer_question(job=job, question_label=qle.label)
 
                     if q_answer is None:
@@ -146,7 +143,7 @@ class IndeedBot(Bot):
                         try:
                             if qle.element.get_attribute(HTML.Attributes.TYPE) == HTML.InputTypes.RADIO:
                                 radio_name = qle.element.get_attribute(HTML.Attributes.NAME)
-                                radio_button_xpath = IndeedConstants.compute_xpath_radio_button(q_answer,radio_name)
+                                radio_button_xpath = IndeedConstants.compute_xpath_radio_button(q_answer, radio_name)
                                 self.driver.find_element_by_xpath(radio_button_xpath).click()
                             else:
                                 qle.element.send_keys(q_answer)
@@ -159,7 +156,11 @@ class IndeedBot(Bot):
                     return True
                 # Stuck on a question with no answer
                 elif unable_to_answer:
-                    job.error = BotConstants.String.UNABLE_TO_ANSWER
+                    if job.message is None:
+                        job.error = BotConstants.String.NOT_ENOUGH_KEYWORD_MATCHES
+                        job.good_fit = False
+                    else:
+                        job.error = BotConstants.String.UNABLE_TO_ANSWER
                     break
                 # Remove answered questions
                 else:
@@ -173,23 +174,30 @@ class IndeedBot(Bot):
         q_element_inputs = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_INPUTS)
         # Make grouped radio buttons into only one element, using the name attribute
         q_element_inputs = remove_grouped_elements_by_attribute(q_element_inputs, 'name')
-        assert (len(q_element_labels) == len(q_element_inputs))
-        list_question_label_element = []
-        for i in range(0, len(q_element_labels)):
-            formatted_label = q_element_labels[i].get_attribute(HTML.Attributes.INNER_TEXT).lower().strip()
-            list_question_label_element.append(
-                QuestionLabelElement(
-                    label=formatted_label,
-                    element=q_element_inputs[i]
+        app_success = False
+        if len(q_element_labels) == len(q_element_inputs):
+            list_question_label_element = []
+            for i in range(0, len(q_element_labels)):
+                formatted_label = q_element_labels[i].get_attribute(HTML.Attributes.INNER_TEXT).lower().strip()
+                list_question_label_element.append(
+                    QuestionLabelElement(
+                        label=formatted_label,
+                        element=q_element_inputs[i]
+                    )
                 )
-            )
-        add_questions_to_database(list_question_label_element)
-        if answer_questions(list_question_label_element):
-            if not self.DRY_RUN:
-                self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_APPLY).click()
-            self.successful_application(job, dry_run=self.DRY_RUN)
+            add_questions_to_database(list_question_label_element)
+
+            if answer_questions(list_question_label_element):
+                if not self.DRY_RUN:
+                    self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_APPLY).click()
+                self.successful_application(job, dry_run=self.DRY_RUN)
+                app_success = True
         else:
+            job.error = BotConstants.String.QUESTION_LABELS_AND_INPUTS_MISMATCH
+
+        if not app_success:
             self.failed_application(job)
+
         return
 
 
@@ -204,6 +212,7 @@ def remove_grouped_elements_by_attribute(html_elements, attribute):
         previous_attribute = current_attribute
 
     return copy_elements
+
 
 if __name__ == "__main__":
     Question.drop_table()

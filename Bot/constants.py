@@ -11,6 +11,8 @@ class BotConstants(Const):
 
     class String(Const):
         UNABLE_TO_ANSWER = 'Unable to answer all questions'
+        NOT_ENOUGH_KEYWORD_MATCHES = 'Not enough keyword matches in the description'
+        QUESTION_LABELS_AND_INPUTS_MISMATCH = 'The number of labels and question input elements do not match'
 
 
 class IndeedConstants(Const):
