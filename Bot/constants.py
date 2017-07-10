@@ -67,3 +67,4 @@ class IndeedConstants(Const):
     XPATH_ALL_QUESTION_INPUTS = r"//div[contains(@class, 'input-container')]//input | " \
                           r"//div[contains(@class, 'input-container')]//select | " \
                           r"//div[contains(@class, 'input-container')]//textarea"
+

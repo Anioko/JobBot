@@ -11,15 +11,15 @@ class BaseModel(Model):
 
 
 class Job(BaseModel):
-    # Link Information
-    link_id = TextField(primary_key=True)
-    link = TextField()
-
     # Job fields
+    job_key = TextField(primary_key=True)
+    link = TextField()
     title = TextField()
     description = TextField(null=True)
     company = TextField()
-    location = TextField()
+    city = CharField()
+    state = CharField()
+    country = CharField()
     posted_date = DateField()
     expired = BooleanField(default=False)
 

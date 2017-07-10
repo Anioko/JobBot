@@ -12,6 +12,7 @@ from Bot.Bot import Bot
 from Bot.constants import IndeedConstants, BotConstants
 from collections import namedtuple
 from typing import List, Optional
+from indeed import IndeedClient
 
 QuestionLabelElement = namedtuple('QuestionLabelElement', 'label element')
 
@@ -20,92 +21,35 @@ class IndeedBot(Bot):
     def __init__(self, user_config, dry_run=False, reload_tags_blurbs=True):
         super().__init__(user_config, dry_run=False, reload_tags_blurbs=True)
 
-    def _handle_popup(self):
-        try:
-            # Just to ensure that there is a popup
-            self.driver.find_element_by_id(IndeedConstants.ID_POPUP)
-            webdriver.ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
-        except common.exceptions.NoSuchElementException:
-            pass
-
-    def login(self):
-        self.driver.get(IndeedConstants.URL_LOGIN)
-        elEmail = self.driver.find_element_by_id(IndeedConstants.ID_INPUT_LOGIN_EMAIL)
-        elEmail.send_keys(self.user_config.EMAIL)
-        self.driver.find_element_by_id(IndeedConstants.ID_INPUT_LOGIN_PASSWORD).send_keys(self.user_config.PASSWORD)
-        elEmail.submit()
-
-        while self.driver.current_url != IndeedConstants.URL_BASE:
-            time.sleep(BotConstants.WAIT_DELTA)
-
-    def search_jobs(self):
-        # Apparently the difference between %2B and + matters in the search query
-        url_args = urlencode(IndeedConstants.SEARCH_PARAMETERS).replace('%2B', '+')
-        search_url = IndeedConstants.URL_SEARCH + url_args
-        self.driver.get(search_url)
-
-        while True:
-            soup = BeautifulSoup(self.driver.page_source, 'html.parser')
-            job_results_soup = soup.find_all(HTML.TagType.DIV, class_=IndeedConstants.DIV_JOB.CLASSES)
-
-            self.store_jobs(job_results_soup)
-
-            next_page_exists = self._next_page()
-            if not next_page_exists:
-                break
-
-    @sleep_after_function(BotConstants.WAIT_MEDIUM)
-    def _next_page(self):
-        try:
-            self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_NEXT_PAGE).click()
-            # Right after pressing next a popup alert usually happens
-            self._handle_popup()
-            return True
-
-        except common.exceptions.NoSuchElementException:
-            print('Next button not found.\nNo more search results')
-            return False
-
-    def store_jobs(self, job_results_soup):
-        count_new = 0
-        count_seen = 0
-
-        # Iterated through results and save to database
-        for job_tag in job_results_soup:
-            if IndeedConstants.DIV_JOB.EASY_APPLY in job_tag.text:
-                if len(job_tag.find_all(HTML.TagType.SPAN, class_=IndeedConstants.DIV_JOB.CLASS_SPONSORED)) != 0:
-                    job_title_soup = \
-                    job_tag.find_all(HTML.TagType.ANCHOR, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LINK)[0]
-                    job_link = IndeedConstants.URL_BASE + job_title_soup[HTML.Attributes.HREF]
-                else:
-                    job_title_soup = job_tag.find_all(HTML.TagType.H2, class_=IndeedConstants.DIV_JOB.CLASS_JOB_LINK)[0]
-                    job_link = IndeedConstants.URL_BASE + job_title_soup.a[HTML.Attributes.HREF]
-
-                job_id = job_tag[HTML.Attributes.ID]
-                # Format
-                job_company = job_tag.find(HTML.TagType.SPAN,
-                                           class_=IndeedConstants.DIV_JOB.CLASS_JOB_COMPANY).text.strip()
-                job_location = job_tag.find(HTML.TagType.SPAN,
-                                            class_=IndeedConstants.DIV_JOB.CLASS_JOB_LOCATION).text.strip()
-                job_title = job_title_soup.text.strip()
-
+    def search_with_api(self, params: dict):
+        client = IndeedClient(publisher=self.user_config.INDEED_API_KEY)
+        search_response = client.search(**params)
+        results = search_response['results']
+        count = 0
+        for job_result in results:
+            if job_result['indeedApply']:
                 try:
-                    job = Job.create(
-                        link_id=job_id, link=job_link, title=job_title, location=job_location,
-                        company=job_company, easy_apply=True
+                    Job.create(
+                        job_key=job_result['jobkey'],
+                        link=job_result['url'],
+                        title=job_result['jobtitle'],
+                        company=job_result['company'],
+                        city=job_result['city'],
+                        state=job_result['state'],
+                        country=job_result['country'],
+                        posted_date=job_result['date'],
+                        expired=job_result['expired'],
+                        easy_apply=job_result['indeedApply']
                     )
-                    job.save()
-                    count_new += 1
-                except peewee.IntegrityError:
-                    # print("{0} with id: {1}\tAlready in job table ".format(jobTitle, jobId))
-                    count_seen += 1
-
-        print("{0} new jobs stored\n{1} jobs already stored".format(count_new, count_seen))
+                    count += 1
+                except peewee.IntegrityError as e:
+                    pass
+        print('Added {0} new jobs'.format(count))
 
     def apply_jobs(self):
         count_applied = 0
 
-        jobs = Job.select().where(Job.applied == False)
+        jobs = Job.select().where(Job.applied is False)
         for job in jobs:
             if count_applied > BotConstants.MAX_COUNT_APPLIED_JOBS:
                 print('Max job apply limit reached')

@@ -52,7 +52,6 @@ fabric.properties
 __pycache__/
 
 # Custom
-userconfig.py
 *.db
 *.db-journal
 *.log
