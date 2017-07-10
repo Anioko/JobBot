@@ -1,4 +1,5 @@
 import peewee
+from selenium.webdriver.firefox.webelement import FirefoxWebElement
 from selenium import webdriver, common
 from helpers import sleep_after_function
 from constants import HTML
@@ -106,6 +107,14 @@ class IndeedBot(Bot):
         job.save()
 
     def fill_application(self, job: Job):
+        def remove_multiple_attachments(q_el_inputs: List[FirefoxWebElement]):
+            new_el_inputs = []
+            for i in range(0, len(q_el_inputs)):
+                current_id = q_el_inputs[i].get_attribute('id')
+                if 'multattach' not in current_id:
+                    new_el_inputs.append(q_el_inputs[i])
+            return new_el_inputs
+
         def add_questions_to_database(list_qle: List[QuestionLabelElement]):
             """
             Passes a question model object to application builder to add to database
@@ -174,6 +183,8 @@ class IndeedBot(Bot):
         q_element_inputs = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_INPUTS)
         # Make grouped radio buttons into only one element, using the name attribute
         q_element_inputs = remove_grouped_elements_by_attribute(q_element_inputs, 'name')
+        # TODO: Eventually add labels for multi-attach and attach transcripts
+        q_element_inputs = remove_multiple_attachments(q_element_inputs)
         app_success = False
         if len(q_element_labels) == len(q_element_inputs):
             list_question_label_element = []

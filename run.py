@@ -5,12 +5,17 @@ from userconfig import UserConfig
 if __name__ == "__main__":
     bot = IndeedBot(UserConfig(), dry_run=False)
 
+    q1 = '((intern OR co-op) AND ' \
+             '(software OR develop OR engineer OR mechanical OR mechatronics ' \
+             'OR programming OR android OR ios OR technical OR qa OR testing OR automation)) ' \
+             '-"marketing" -"human resources" -"hr" -unpaid -volunteer -"labor" -"labour" -secretary ' \
+             '-receptionist -"assistant" -clerk -instructor -coordinator -tutor -cook -operator -manager'
+    q2 = 'software AND engineer AND co-op'
     params = {
-        'q': '((intern OR co-op) AND '
-             '(software OR develop OR engineer OR mechanical OR mechatronics OR programming OR android OR ios OR technical OR qa OR testing OR automation)) '
-             '-marketing -human -hr -unpaid -volunteer -labor -labour -secretary -receptionist -assistant -clerk -instructor -coordinator -tutor -cook -operator -manager',
+        'q': q2,
         'limit': '25',
-        'fromage': '20',
+        #'jt':'internship',
+        #'fromage': '20',
         'language': 'en',
         'co': 'ca',
         'userip': "1.2.3.4",

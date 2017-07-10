@@ -189,22 +189,104 @@ class ApplicationBuilder:
 
 if __name__ == "__main__":
     a = ApplicationBuilder(UserConfig)
-    desc = '''Lokafy is an early-stage startup based in Toronto that has a mission to change the way people travel, to make it more about the people we met and not just the places we see. We connect travellers with passionate locals - offering an experience that’s like having a friend show you around the city. You can see a one-minute video that explains the concept here: https://lkfy.co/2a9oCUR
-Lokafy is expanding to cities all over the world and is starting to gain some good traction. If you’d like to get in on the ground level of a promising startup, this is the opportunity you’ve been waiting for.
-We would like to add 1-2 developers (front/back and full stack) to the team so that we can make complete our website re-design project and start moving forward with new functionality based on our growth objectives.
-You would be working closely with a small team (Founder, Back-end Developer, Designer/Front-End Developer and other marketing and business development interns) where you have the opportunity to brainstorm ideas, try out new ways of doing things and learn from a team with diverse experience.
-This internship would be a great opportunity to work on an early stage startup to really shape the user experience as opposed to just making incremental improvements at more established companies or startups. There is a designer on the team along with 3 other developers (including the founder). The designs are all ready to go and a lot of the front end development is ready so we'd like to add someone to the team who can hit the ground running and allow us to launch the re-designed website quickly. For those are a bit more experience, there is opportunity to take a lead the development team to build up experience for more senior roles.
-We'd love to work with someone who:
-- Has experience with Django or Angular JS
-- Is interested in learning and is resourceful (can figure stuff out by researching online)
-- Is proud of their work and loves challenges
-- Is willing to meet in person regularly
-- Loves to share knowledge and exchange ideas
-Job Location:
-Toronto, ON
-Required experience:
-Angularjs: 1 year
-Django: 1 year'''
+    desc = '''Co-Op – Applications and Testing 
+Insurance Corporation of British Columbia  73 reviews - North Vancouver, BC
+A career at ICBC is an opportunity to be part of a talented, diverse and inclusive team that is driven to serve its customers and community. Make the most of your skills and take the opportunity to grow and develop your career. You can expect a competitive salary, comprehensive benefits and a challenging work environment. Drive your career with us.
+
+ICBC is an equal opportunity employer, and invites applications from all qualified candidates.
+
+Co-Op – Applications and Testing
+
+Job Title: (O) Coop Student Wt 2
+
+Location: North Vancouver
+
+Hours of Work: 7.5 hr Day Shift (M-F)
+
+Reference Number: 109906
+
+Employment Type: Co-op
+
+Position Highlights
+
+Working as a member on one of ICBC’s Applications and Testing teams, you’ll be assigned to various projects and engagements that will expose you to hundreds of applications, business insights and content management solutions which are used by thousands of internal and external users.
+
+We have an excellent opportunity for a 4 or 8 month assignment where you have the opportunity to work in:
+
+APPLICATIONS:
+
+An agile development shop that technologies and programming languages such as: Java, UNIX, Oracle Database, C#/.NET,
+
+C++, SAP, Guidewire ClaimCenter and PolicyCenter, SQL, SQL Server, Splunk, Opnet, Business Objects, Tableau, SAS,
+
+HTML, CSS and JavaScript.
+
+We are looking for a qualified co-op student who:
+
+Will play a supporting role for development teams within IS Claims or Insurance Applications;
+Will analyze P1 & P2 incidents of applications in production, and assist with post-incident review (PIR);
+Gather and analyze user requirements for new application functionality;
+Build web prototypes;
+Create/update system documentation;
+Create/modify reporting solutions;
+Has an ability to work cooperatively within a team environment and other departments to provide support for data integration,
+data analysis and data visualization.
+
+AND/OR, TESTING
+
+Integration and automation testing team, supporting functional regression and performance testing, for different release and
+
+project teams, across multiple lines of business, using a variety of software tools, including: HP UFT, Selenium, HP ALM, Load
+
+Runner, Splunk, Soap UI, and VSTS.
+
+We are looking for a qualified co-op student who will:
+
+Develop automated scripts for regressions testing needs of various release teams;
+Understand the testing requirement and suggest simple and quick solutions to automate it;
+Troubleshoot and resolve issues with automation framework;
+Perform Proofs-of concept with multiple automation tools;
+Create/update system documentation; and
+Create/modify reporting solutions.
+Position Requirements
+
+The ideal candidate will have the following:
+
+For Applications Roles
+
+Good understanding of client server and web technologies;
+Good understanding of Java and .NET/C# (UNIX would be a bonus), SQL database queries;
+Good understanding of standard web technologies and libraries (i.e. HTML, CSS, JavaScript and JQuery);
+Good understanding of quality assurance practices relating to software development; and
+Ability to work cooperatively within a team environment and other departments to provide support for data integration, data
+analysis and data visualization.
+
+For Testing Roles
+
+Good understanding of client server and web technologies;
+Good understanding of Java, Ruby , .NET, VB and SQL database queries;
+Good understanding of standard web technologies and libraries (ie HTML, CSS, JavaScript and JQuery);
+Good understanding of SOA and web services;
+Good understanding of quality assurance practices relating to software development; and
+Willingness to learn with a strong analytical mindset.
+For both Applications or Testing Roles
+
+Excellent inter-personal skills;
+Excellent communication/presentation skills; and
+Excellent organizational and writing skills.
+Position Information
+
+As a valued member of the ICBC team, you’ll thrive in a performance-driven environment that emphasizes employee leadership
+
+and accountability for delivering results. Anticipate a competitive salary, comprehensive benefits and a challenging work
+
+environment.
+
+If you’re ready to join a driven team, we’d love to hear from you.
+
+ICBC is a welcoming, equal opportunity employer, and invites applications from all qualified candidates.
+
+'''
     a.reset_all_tables()
-    a.read_tag_blurbs('blurbs.txt')
-    print(a.generate_message(desc, 'comp'))
+    a.read_tag_blurbs(r'C:\Users\arash\Github\JobBot\blurbs.txt')
+    print(a.generate_message(desc, 'ICBC'))
