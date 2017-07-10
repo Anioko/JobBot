@@ -15,36 +15,9 @@ class BotConstants(Const):
 
 class IndeedConstants(Const):
     WEBSITE_NAME = 'Indeed'
-    URL_LOGIN = r'https://secure.indeed.com/account/login?service=my&hl=en_CA&co=CA&continue=https%3A%2F%2Fwww.indeed.ca%2F'
-    ID_INPUT_LOGIN_EMAIL = r'signin_email'
-    ID_INPUT_LOGIN_PASSWORD = r'signin_password'
-    URL_BASE = r'https://www.indeed.ca/'
-    URL_SEARCH = URL_BASE + r'jobs?'
 
     # SEARCH STAGE
-
-    # Advanced search query
-    SEARCH_PARAMETERS = {
-        'as_any': 'software+develop+engineer+mechanical+mechatronics+programming+android+ios+technical+qa',
-        'as_not': 'market',
-        'jt': 'internship',
-        'limit': 50,
-        'psf': 'advsrch',
-        'radius': 100,
-        'fromage': 'any'
-    }
-
-    class DIV_JOB(Const):
-        CLASSES = ['row', 'result']
-        CLASS_JOB_LINK = 'jobtitle'
-        CLASS_JOB_COMPANY = 'company'
-        CLASS_JOB_LOCATION = 'location'
-        EASY_APPLY = 'Easily apply'
-        CLASS_SPONSORED = 'sponsoredGray'
-        XPATH_COMPANY_NAME = r"//"
-
-    XPATH_BUTTON_NEXT_PAGE = r"//div[contains(@class, 'pagination')]//span[contains(text(), 'Next')]"
-    ID_POPUP = 'popover-foreground'
+    MAX_NUM_RESULTS_PER_REQUEST = 25
 
     # APPLICATION STAGE
     XPATH_APPLY_SPAN = r"//span[contains(@class, 'indeed-apply-button-label')]"

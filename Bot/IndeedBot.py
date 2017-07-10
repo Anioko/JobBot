@@ -13,6 +13,7 @@ from Bot.constants import IndeedConstants, BotConstants
 from collections import namedtuple
 from typing import List, Optional
 from indeed import IndeedClient
+from datetime import datetime
 
 QuestionLabelElement = namedtuple('QuestionLabelElement', 'label element')
 
@@ -24,27 +25,38 @@ class IndeedBot(Bot):
     def search_with_api(self, params: dict):
         client = IndeedClient(publisher=self.user_config.INDEED_API_KEY)
         search_response = client.search(**params)
-        results = search_response['results']
-        count = 0
-        for job_result in results:
-            if job_result['indeedApply']:
-                try:
-                    Job.create(
-                        job_key=job_result['jobkey'],
-                        link=job_result['url'],
-                        title=job_result['jobtitle'],
-                        company=job_result['company'],
-                        city=job_result['city'],
-                        state=job_result['state'],
-                        country=job_result['country'],
-                        posted_date=job_result['date'],
-                        expired=job_result['expired'],
-                        easy_apply=job_result['indeedApply']
-                    )
-                    count += 1
-                except peewee.IntegrityError as e:
-                    pass
-        print('Added {0} new jobs'.format(count))
+
+        count_total_job_results = search_response['totalResults']
+        num_loops = int(count_total_job_results/IndeedConstants.MAX_NUM_RESULTS_PER_REQUEST)
+        start = 0
+
+        count_jobs_added = 0
+        for i in range(0, num_loops):
+            # We can get around MAX_NUM_RESULTS_PER_REQUEST by increasing our start location
+            params['start'] = start
+            search_response = client.search(**params)
+            job_results = search_response['results']
+            for job_result in job_results:
+                if job_result['indeedApply']:
+                    try:
+                        parsed_date = datetime.strptime(job_result['date'], '%a, %d %b %Y %H:%M:%S %Z')
+                        Job.create(
+                            job_key=job_result['jobkey'],
+                            link=job_result['url'],
+                            title=job_result['jobtitle'],
+                            company=job_result['company'],
+                            city=job_result['city'],
+                            state=job_result['state'],
+                            country=job_result['country'],
+                            posted_date=parsed_date.date(),
+                            expired=job_result['expired'],
+                            easy_apply=job_result['indeedApply']
+                        )
+                        count_jobs_added += 1
+                    except peewee.IntegrityError as e:
+                        pass
+            start += IndeedConstants.MAX_NUM_RESULTS_PER_REQUEST
+        print('Added {0} new jobs'.format(count_jobs_added))
 
     def apply_jobs(self):
         count_applied = 0
