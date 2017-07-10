@@ -1,5 +1,4 @@
 from helpers import Const
-from models import Job
 
 
 class BotConstants(Const):
@@ -10,17 +9,9 @@ class BotConstants(Const):
     WAIT_SHORT = 2
     MAX_COUNT_APPLIED_JOBS = 100
 
-    @staticmethod
-    def successful_application(job: Job) -> str:
-        return 'Successfully applied to {0} with {1} at {2}'.format(job.title, job.company, job.location)
-
-    @staticmethod
-    def failed_application(job: Job, reason: str) -> str:
-        return 'Failed to apply to {0} with {1} at {2} because: '\
-            .format(job.title, job.company, job.location, reason)
-
     class String(Const):
         UNABLE_TO_ANSWER = 'Unable to answer all questions'
+
 
 class IndeedConstants(Const):
     WEBSITE_NAME = 'Indeed'

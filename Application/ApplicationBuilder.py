@@ -7,6 +7,7 @@ import peewee
 from Application.constants import ApplicationBuilderConstants as ABConstants
 import typing
 
+
 class ApplicationBuilder:
     def __init__(self, user_config):
         # Create tables
@@ -37,6 +38,7 @@ class ApplicationBuilder:
     @staticmethod
     def add_question_to_database(q_object: Question):
         def _categorize_question(q: Question):
+            # TODO: Change all these to any()
             if ABConstants.QuestionNeedle.RESUME in q.label:
                 q.question_type = ABConstants.QuestionTypes.RESUME
 
@@ -54,6 +56,9 @@ class ApplicationBuilder:
 
             elif ABConstants.QuestionNeedle.LANGUAGE in q.label:
                 q.question_type = ABConstants.QuestionTypes.LANGUAGE
+
+            elif ABConstants.QuestionNeedle.CERTIFICATION in q.label:
+                q.question_type = ABConstants.QuestionTypes.CERTIFICATION
 
             elif any(string in q.label for string in ABConstants.QuestionNeedle.LIST_CONTACT_INFO):
                 q.question_type = ABConstants.QuestionTypes.CONTACT_INFO
@@ -105,9 +110,7 @@ class ApplicationBuilder:
         tokens = nltk.word_tokenize(job_description)
         word_list = set([word.lower() for word in tokens if word.isalpha()])
         # Remove stopwords (the, a)
-        filtered_words = [word for word in word_list if word not in nltk.corpus.stopwords.words('english')]
-        # Stem words
-        key_words = [self.lemmatizer.lemmatize(word, 'v') for word in filtered_words]
+        key_words = [word for word in word_list if word not in nltk.corpus.stopwords.words('english')]
 
         blurb_id_list = []
         for word in key_words:

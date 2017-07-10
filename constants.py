@@ -19,5 +19,5 @@ class HTML(Const):
         INNER_TEXT = 'innerText'
         NAME = 'name'
 
-    class INPUT_TYPES(Const):
+    class InputTypes(Const):
         RADIO = 'radio'

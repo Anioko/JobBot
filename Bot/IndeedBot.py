@@ -8,26 +8,17 @@ from Application.ApplicationBuilder import ApplicationBuilder
 from helpers import sleep_after_function
 from constants import HTML
 from models import Job, Question
-from Bot.constants import BotConstants, IndeedConstants
+from Bot.Bot import Bot
+from Bot.constants import IndeedConstants, BotConstants
 from collections import namedtuple
+from typing import List, Optional
 
 QuestionLabelElement = namedtuple('QuestionLabelElement', 'label element')
 
 
-class IndeedBot(object):
+class IndeedBot(Bot):
     def __init__(self, user_config, dry_run=False, reload_tags_blurbs=True):
-        self.DRY_RUN = dry_run
-        self.user_config = user_config
-        self.driver = webdriver.Firefox()
-        self.driver.implicitly_wait(BotConstants.WAIT_IMPLICIT)
-        self.application_builder = ApplicationBuilder(user_config)
-
-        self._create_tables()
-
-        if reload_tags_blurbs:
-            self.application_builder.reset_all_tables()
-            print('Initializing Tags and Blurbs from {0}'.format(user_config.PATH_TAG_BLURBS))
-            self.application_builder.read_tag_blurbs(user_config.PATH_TAG_BLURBS)
+        super().__init__(user_config, dry_run=False, reload_tags_blurbs=True)
 
     def _handle_popup(self):
         try:
@@ -124,7 +115,7 @@ class IndeedBot(object):
             count_applied += 1
 
     @sleep_after_function(BotConstants.WAIT_MEDIUM)
-    def _apply_to_single_job(self, job):
+    def _apply_to_single_job(self, job: Job):
         """
         Assuming you are on a job page, presses the apply button and switches to the application
         IFrame. If everything is working properly it call fill_application.
@@ -133,8 +124,7 @@ class IndeedBot(object):
         :return:
         """
         # TODO: Add assert to ensure you are on job page
-        print('Attempting application for {0} with {1} at {2}'.format(job.title, job.company, job.location))
-        job.attempted = True
+        self.attempt_application(job)
         if job.easy_apply:
             try:
                 self.driver.get(job.link)
@@ -148,7 +138,7 @@ class IndeedBot(object):
                 self.driver.switch_to.frame(1)
                 self.driver.switch_to.frame(0)
 
-                self.fill_application(job, dry_run=self.DRY_RUN)
+                self.fill_application(job)
 
             except common.exceptions.NoSuchFrameException as e:
                 job.error = str(e)
@@ -163,8 +153,8 @@ class IndeedBot(object):
 
         job.save()
 
-    def fill_application(self, job: Job, dry_run=False):
-        def add_questions_to_database(list_qle):
+    def fill_application(self, job: Job):
+        def add_questions_to_database(list_qle: List[QuestionLabelElement]):
             """
             Passes a question model object to application builder to add to database
             :param list_qle: List of QuestionLabelElement namedtupled objects
@@ -179,7 +169,7 @@ class IndeedBot(object):
                 )
                 self.application_builder.add_question_to_database(q_object)
 
-        def answer_questions(list_qle):
+        def answer_questions(list_qle: List[QuestionLabelElement]):
             """
             Returns True if all questions successfully answered and False otherwise
             :param list_qle:
@@ -198,13 +188,9 @@ class IndeedBot(object):
 
                     else:
                         try:
-                            if qle.element.get_attribute(HTML.Attributes.TYPE) == HTML.INPUT_TYPES.RADIO:
+                            if qle.element.get_attribute(HTML.Attributes.TYPE) == HTML.InputTypes.RADIO:
                                 radio_name = qle.element.get_attribute(HTML.Attributes.NAME)
-                                radio_button_xpath = IndeedConstants.compute_xpath_radio_button(
-                                    IndeedConstants.UNFORMATTED_XPATH_RADIO_OPTION,
-                                    q_answer,
-                                    radio_name
-                                )
+                                radio_button_xpath = IndeedConstants.compute_xpath_radio_button(q_answer,radio_name)
                                 self.driver.find_element_by_xpath(radio_button_xpath).click()
                             else:
                                 qle.element.send_keys(q_answer)
@@ -243,21 +229,12 @@ class IndeedBot(object):
             )
         add_questions_to_database(list_question_label_element)
         if answer_questions(list_question_label_element):
-            self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_APPLY).click()
-            job.applied = True
-            print(BotConstants.successful_application(job))
+            if not self.DRY_RUN:
+                self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_APPLY).click()
+            self.successful_application(job, dry_run=self.DRY_RUN)
         else:
-            print(BotConstants.failed_application(job, job.error))
+            self.failed_application(job)
         return
-
-    @staticmethod
-    def _create_tables():
-        # Create table if not exists
-        Job.create_table(fail_silently=True)
-        Question.create_table(fail_silently=True)
-
-    def shut_down(self):
-        self.driver.close()
 
 
 def remove_grouped_elements_by_attribute(html_elements, attribute):
@@ -271,26 +248,6 @@ def remove_grouped_elements_by_attribute(html_elements, attribute):
         previous_attribute = current_attribute
 
     return copy_elements
-
-
-def does_element_exist(driver, identifier, useXPath=True):
-    """
-    Function that checks if a element exists on the page
-    :param driver: selenium.webdriver
-    :param identifier: either a ID attribute or an xPath
-    :param useXPath:
-    :return:
-    """
-    try:
-        if useXPath:
-            driver.find_element_by_xpath(identifier)
-        else:
-            driver.find_element_by_id(identifier)
-        return True
-
-    except common.exceptions.NoSuchElementException:
-        return False
-
 
 if __name__ == "__main__":
     Question.drop_table()

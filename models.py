@@ -20,12 +20,13 @@ class Job(BaseModel):
     description = TextField(null=True)
     company = TextField()
     location = TextField()
+    posted_date = DateField()
+    expired = BooleanField(default=False)
 
     # Application fields
     easy_apply = BooleanField(default=False)
     applied = BooleanField(default=False)
-    attempted = BooleanField(default=False)
-    date = DateField(default=datetime.datetime.now().date())
+    access_date = DateField(null=True)
     error = TextField(null=True)
     cover_letter = TextField(null=True)
     good_fit = BooleanField(default=True)
