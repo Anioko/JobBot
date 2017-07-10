@@ -12,5 +12,5 @@ The JobBot application consists of multiple parts:
       2. AngelBot: Manually crawls through job listings using Selenium and applies to them
 ## Required Files:
 You need these files for the application to work properly:
-* "blurbs.txt" - This file contains the keywords and text that are used to generate a custom message
-    *The way it works is you specify keywords or tags that will trigger a blurb to be inserted into your custom message, if they are in the job description.
+* "blurbs.txt" - This file contains the keywords and text that are used to generate a custom message      
+    * The way it works is you specify keywords or tags that will trigger a blurb to be inserted into your custom message, if they are in the job description.
