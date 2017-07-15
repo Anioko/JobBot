@@ -31,10 +31,10 @@ if __name__ == "__main__":
         bot.login()
         query_parameters = {"types": "internship",
                             "roles": [
-                                "Software Engineer", "Hardware Engineer",
-                                "Data Scientist", "Systems Engineer",
-                                "Business Analyst", "Mechanical Engineer"
-                                ]
+                                "Software Engineer"
+                                ],
+                            "last_active" : "30",
+                            "excluded_keywords": ["unpaid"]
                             }
-        bot.apply(query_parameters)
-        #bot.shut_down()
+        bot.gather(query_parameters)
+        bot.shut_down()

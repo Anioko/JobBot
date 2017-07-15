@@ -12,17 +12,18 @@ class BaseModel(Model):
 
 class Job(BaseModel):
     # Job fields
-    job_key = TextField(primary_key=True)
+    key = CharField()
+    website = CharField()
     link = TextField()
     title = CharField()
     description = TextField(null=True)
-    company = TextField()
-    city = CharField()
-    state = CharField()
-    country = CharField()
-    posted_date = DateField()
+    company = TextField(null=True)
+    city = CharField(null=True)
+    state = CharField(null=True)
+    country = CharField(null=True)
+    posted_date = DateField(null=True)
     expired = BooleanField(default=False)
-    location = CharField()
+    location = CharField(null=True)
 
     # Application fields
     easy_apply = BooleanField(default=False)
@@ -31,6 +32,9 @@ class Job(BaseModel):
     error = TextField(null=True)
     message = TextField(null=True)
     good_fit = BooleanField(default=True)
+
+    class Meta:
+        primary_key = CompositeKey('key', 'website')
 
 
 class Question(BaseModel):
@@ -43,6 +47,7 @@ class Question(BaseModel):
     input_type = CharField(null=False)
     secondary_input_type = CharField(null=True)
     question_type = CharField(null=True)
+    additional_info = TextField(null=True)
 """
 These next two models are for the application builder
 """

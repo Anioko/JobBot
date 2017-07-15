@@ -1,8 +1,8 @@
 from abc import ABC
+from helpers import Const
 from models import Job, Question
 from selenium import webdriver
 from Application.ApplicationBuilder import ApplicationBuilder
-from Bot.constants import RobotConstants
 from datetime import datetime
 from userconfig import UserConfig
 
@@ -52,3 +52,17 @@ class Robot(ABC):
 
     def shut_down(self):
         self.driver.close()
+
+
+class RobotConstants(Const):
+    WAIT_IMPLICIT = 5
+    WAIT_DELTA = .100
+    WAIT_LONG = 15
+    WAIT_MEDIUM = 7
+    WAIT_SHORT = 2
+    MAX_COUNT_APPLICATION_ATTEMPTS = 100
+
+    class String(Const):
+        UNABLE_TO_ANSWER = 'Unable to answer all questions'
+        NOT_ENOUGH_KEYWORD_MATCHES = 'Not enough keyword matches in the description'
+        QUESTION_LABELS_AND_INPUTS_MISMATCH = 'The number of labels and question input elements do not match'
