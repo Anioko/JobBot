@@ -11,6 +11,7 @@ class ApplicationBuilderConstants(Const):
     REGEX_BLURB_CAPTURE = re.compile(r'"""(.*?)"""', re.DOTALL)
     START_TAG = 'start_tag'
     END_TAG = 'end_tag'
+    END_TAG_ALT = 'end_tag_alt'
     REPLACE_COMPANY_STRING = r'{COMPANY}'
     BULLET_POINT = "-"
 

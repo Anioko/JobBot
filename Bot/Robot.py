@@ -2,16 +2,17 @@ from abc import ABC
 from models import Job, Question
 from selenium import webdriver
 from Application.ApplicationBuilder import ApplicationBuilder
-from Bot.constants import BotConstants
+from Bot.constants import RobotConstants
 from datetime import datetime
+from userconfig import UserConfig
 
 
-class Bot(ABC):
-    def __init__(self, user_config, dry_run=False, reload_tags_blurbs=True):
+class Robot(ABC):
+    def __init__(self, user_config: UserConfig, dry_run=False, reload_tags_blurbs=True):
         self.DRY_RUN = dry_run
         self.user_config = user_config
         self.driver = webdriver.Firefox()
-        self.driver.implicitly_wait(BotConstants.WAIT_IMPLICIT)
+        self.driver.implicitly_wait(RobotConstants.WAIT_IMPLICIT)
         self.application_builder = ApplicationBuilder(user_config)
 
         self._create_tables()

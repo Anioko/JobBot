@@ -9,5 +9,6 @@ class UserConfig(Const):
 
     PATH_TAG_BLURBS = r'blurbs.txt'
 
+    USE_ALT_END_TAG = True
     MIN_BLURBS = 3
     DEFAULT_YEARS_EXPERIENCE = 1

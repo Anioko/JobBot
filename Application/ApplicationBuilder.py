@@ -31,14 +31,20 @@ class ApplicationBuilder:
         :return:
         """
         if ABConstants.QuestionNeedle.MESSAGE in question_label:
-            job.message = self.generate_message(job.description, job.company)
+            job.message = self.generate_message(job.description, job.company, alt_end_tag=self.user_config.USE_ALT_END_TAG)
             return job.message
 
         try:
             question = Question.get(Question.label == question_label)
-            if question.answer is None and question.label == ABConstants.QuestionTypes.EXPERIENCE:
-                if default_experience_answer:
-                    return UserConfig.DEFAULT_YEARS_EXPERIENCE
+            if question.answer is None:
+                if question.question_type == ABConstants.QuestionTypes.EXPERIENCE:
+                    if default_experience_answer:
+                        return UserConfig.DEFAULT_YEARS_EXPERIENCE
+                if question.question_type == ABConstants.QuestionTypes.LOCATION:
+                    if ('vancouver, bc' not in question.label) and ('burnaby, bc' not in question.label):
+                        question.answer = 'No'
+                    else:
+                        question.answer = 'Yes'
 
             return question.answer
 
@@ -48,7 +54,7 @@ class ApplicationBuilder:
         return None
 
     @staticmethod
-    def get_question_from_label(question_label: str ) -> typing.Optional[Question]:
+    def get_question_from_label(question_label: str) -> typing.Optional[Question]:
         try:
             return Question.get(Question.label == question_label)
         except peewee.DoesNotExist:
@@ -96,7 +102,7 @@ class ApplicationBuilder:
         except peewee.IntegrityError:
             pass
 
-    def generate_message(self, description: str, company: str, contain_min_blurbs=True) -> typing.Optional[str]:
+    def generate_message(self, description: str, company: str, contain_min_blurbs=True, alt_end_tag=False) -> typing.Optional[str]:
         """
         Returns a generated message based on the job description and company
         If 'containMinBlurbs' == True, then return None if not enough tags are in description
@@ -104,10 +110,14 @@ class ApplicationBuilder:
         :param description:
         :param company:
         :param contain_min_blurbs:
+        :param alt_end_tag:
         :return:
         """
         intro_tag = Tag.get(Tag.text == ABConstants.START_TAG)
-        end_tag = Tag.get(Tag.text == ABConstants.END_TAG)
+        if alt_end_tag:
+            end_tag = Tag.get(Tag.text == ABConstants.END_TAG_ALT)
+        else:
+            end_tag = Tag.get(Tag.text == ABConstants.END_TAG)
 
         blurb_intro = Blurb.get(Blurb.id == intro_tag.blurb.id)
         blurb_end = Blurb.get(Blurb.id == end_tag.blurb.id)

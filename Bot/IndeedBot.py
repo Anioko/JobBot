@@ -4,8 +4,8 @@ from selenium import webdriver, common
 from helpers import sleep_after_function
 from constants import HTML
 from models import Job, Question
-from Bot.Bot import Bot
-from Bot.constants import IndeedConstants, BotConstants
+from Bot.Robot import Robot
+from Bot.constants import IndeedConstants, RobotConstants
 from collections import namedtuple
 from typing import List, Optional
 from indeed import IndeedClient
@@ -14,9 +14,9 @@ from datetime import datetime
 QuestionLabelElement = namedtuple('QuestionLabelElement', 'label element')
 
 
-class IndeedBot(Bot):
+class IndeedRobot(Robot):
     def __init__(self, user_config, dry_run=False, reload_tags_blurbs=True):
-        super().__init__(user_config, dry_run=False, reload_tags_blurbs=True)
+        super().__init__(user_config, dry_run=dry_run, reload_tags_blurbs=reload_tags_blurbs)
 
     def search_with_api(self, params: dict):
         client = IndeedClient(publisher=self.user_config.INDEED_API_KEY)
@@ -58,16 +58,19 @@ class IndeedBot(Bot):
     def apply_jobs(self):
         count_applied = 0
 
-        jobs = Job.select().where(Job.applied == False).where(Job.good_fit == True)
+        jobs = Job\
+            .select()\
+            .where((Job.applied == False) & (Job.good_fit == True) & (Job.access_date >> None))\
+            .order_by(Job.posted_date.desc())
         for job in jobs:
-            if count_applied > BotConstants.MAX_COUNT_APPLIED_JOBS:
+            if count_applied > RobotConstants.MAX_COUNT_APPLIED_JOBS:
                 print('Max job apply limit reached')
                 break
 
             self._apply_to_single_job(job)
             count_applied += 1
 
-    @sleep_after_function(BotConstants.WAIT_MEDIUM)
+    @sleep_after_function(RobotConstants.WAIT_MEDIUM)
     def _apply_to_single_job(self, job: Job):
         """
         Assuming you are on a job page, presses the apply button and switches to the application
@@ -155,7 +158,12 @@ class IndeedBot(Bot):
                                 radio_button_xpath = IndeedConstants.compute_xpath_radio_button(q_answer, radio_name)
                                 self.driver.find_element_by_xpath(radio_button_xpath).click()
                             else:
-                                qle.element.send_keys(q_answer)
+                                try:
+                                    qle.element.send_keys(q_answer)
+                                except Exception as e:
+                                    job.error = e
+                                    return False
+
                             remove_labels.add(qle.label)
                         except common.exceptions.ElementNotInteractableException:
                             q_not_visible = True
@@ -166,17 +174,23 @@ class IndeedBot(Bot):
                 # Stuck on a question with no answer
                 elif unable_to_answer:
                     if job.message is None:
-                        job.error = BotConstants.String.NOT_ENOUGH_KEYWORD_MATCHES
+                        job.error = RobotConstants.String.NOT_ENOUGH_KEYWORD_MATCHES
                         job.good_fit = False
                     else:
-                        job.error = BotConstants.String.UNABLE_TO_ANSWER
+                        job.error = RobotConstants.String.UNABLE_TO_ANSWER
                     break
                 # Remove answered questions
                 else:
                     list_qle = [qle for qle in list_qle if qle.label not in remove_labels]
                     remove_labels.clear()
                     if q_not_visible:
-                        self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_CONT).click()
+                        cont_elements = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_BUTTON_CONT)
+                        for j in range(0, len(cont_elements)):
+                            try:
+                                cont_elements[j].click()
+                                break
+                            except common.exceptions.ElementNotInteractableException as e:
+                                pass
             return False
 
         q_element_labels = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_LABELS)
@@ -204,7 +218,7 @@ class IndeedBot(Bot):
                 self.successful_application(job, dry_run=self.DRY_RUN)
                 app_success = True
         else:
-            job.error = BotConstants.String.QUESTION_LABELS_AND_INPUTS_MISMATCH
+            job.error = RobotConstants.String.QUESTION_LABELS_AND_INPUTS_MISMATCH
 
         if not app_success:
             self.failed_application(job)

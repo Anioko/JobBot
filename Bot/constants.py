@@ -1,7 +1,7 @@
 from helpers import Const
 
 
-class BotConstants(Const):
+class RobotConstants(Const):
     WAIT_IMPLICIT = 2
     WAIT_DELTA = .100
     WAIT_LONG = 15
@@ -43,3 +43,18 @@ class IndeedConstants(Const):
                           r"//div[contains(@class, 'input-container')]//select | " \
                           r"//div[contains(@class, 'input-container')]//textarea"
 
+
+class AngelConstants(Const):
+    WEBSITE_NAME = 'Angel'
+
+    class URL(Const):
+        BASE = r'https://angel.co/'
+        LOGIN = r'https://angel.co/login'
+        JOBS = r'https://angel.co/jobs#find/f!'
+
+    class Id(Const):
+        LOGIN_EMAIL = 'user_email'
+        LOGIN_PASSWORD = 'user_password'
+
+    class XPath(Const):
+        LOGGED_IN = r"//div[string(@data-user_id)]"
