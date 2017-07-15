@@ -1,4 +1,4 @@
-from Bot.Robot import Robot
+from Bot.Robot import Robot, RobotConstants
 
 # Selenium Imports
 from selenium import webdriver, common
@@ -18,7 +18,12 @@ import time
 
 class AngelBot(Robot):
     def __init__(self, user_config: UserConfig, dry_run=False, reload_tags_blurbs=True):
-        super().__init__(user_config, dry_run=dry_run, reload_tags_blurbs=reload_tags_blurbs)
+        super().__init__(
+            user_config=user_config,
+            dry_run=dry_run,
+            reload_tags_blurbs=reload_tags_blurbs,
+            driver=RobotConstants.Driver.CHROME
+        )
 
     def login(self):
         self.driver.get(AngelConstants.URL.LOGIN)
@@ -69,11 +74,24 @@ class AngelBot(Robot):
             .where((Job.applied == False) & (Job.good_fit == True) & (Job.website == AngelConstants.WEBSITE_NAME))
 
         for count, job in enumerate(jobs):
-            if count > RobotConstants.MAX_COUNT_APPLIED_JOBS:
-                print('Max job apply limit reached')
+            if count > RobotConstants.MAX_COUNT_APPLICATION_ATTEMPTS:
+                print(RobotConstants.String.MAX_ATTEMPTS_REACHED)
                 break
 
-            self._apply_to_single_job(job)
+            self._apply_single_job(job)
+
+    def _apply_single_job(self, job: Job):
+        self.driver.get(job.link)
+        self._get_job_information(job)
+
+        apply_element = self.driver.find_element(By.CSS_SELECTOR, AngelConstants.CSSSelector.APPLY)
+
+        job.save()
+
+    def _get_job_information(self, job: Job):
+        element_job_description = self.driver.find_element(By.XPATH, AngelConstants.XPath.JOB_DESCRIPTION)
+        job.description = element_job_description.text
+        print(job.description)
 
     def _is_authenticated(self) -> bool:
         try:
@@ -123,6 +141,10 @@ class AngelConstants(Const):
     class XPath(Const):
         LOGGED_IN = r"//div[string(@data-user_id)]"
         JOB_LISTING_LINK = r"//div[@class='listing-row']//div[@class='title']/a"
+        JOB_DESCRIPTION = r"//div[contains(@class,'job-description')]"
+
+    class CSSSelector(Const):
+        APPLY = r"div.buttons.js-apply.applicant-flow-dropdown > a"
 
     class Regex(Const):
         JOB_KEY_FROM_URL = re.compile('(\d+)-')

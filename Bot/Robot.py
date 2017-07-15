@@ -7,11 +7,39 @@ from datetime import datetime
 from userconfig import UserConfig
 
 
+class RobotConstants(Const):
+    WAIT_IMPLICIT = 5
+    WAIT_DELTA = .100
+    WAIT_LONG = 15
+    WAIT_MEDIUM = 7
+    WAIT_SHORT = 2
+    MAX_COUNT_APPLICATION_ATTEMPTS = 100
+
+    class Driver(Const):
+        FIREFOX = 'firefox'
+        CHROME = 'chrome'
+
+    class String(Const):
+        UNABLE_TO_ANSWER = 'Unable to answer all questions'
+        NOT_ENOUGH_KEYWORD_MATCHES = 'Not enough keyword matches in the description'
+        QUESTION_LABELS_AND_INPUTS_MISMATCH = 'The number of labels and question input elements do not match'
+        MAX_ATTEMPTS_REACHED = 'The maximum number of job application attempts has been reached'
+
+
 class Robot(ABC):
-    def __init__(self, user_config: UserConfig, dry_run=False, reload_tags_blurbs=True):
+    def __init__(
+            self,
+            user_config: UserConfig,
+            dry_run=False,
+            reload_tags_blurbs=True,
+            driver=RobotConstants.Driver.FIREFOX
+    ):
         self.DRY_RUN = dry_run
         self.user_config = user_config
-        self.driver = webdriver.Firefox()
+        if driver == RobotConstants.Driver.CHROME:
+            self.driver = webdriver.Chrome()
+        else:
+            self.driver = webdriver.Firefox()
         self.driver.implicitly_wait(RobotConstants.WAIT_IMPLICIT)
         self.application_builder = ApplicationBuilder(user_config)
 
@@ -53,16 +81,3 @@ class Robot(ABC):
     def shut_down(self):
         self.driver.close()
 
-
-class RobotConstants(Const):
-    WAIT_IMPLICIT = 5
-    WAIT_DELTA = .100
-    WAIT_LONG = 15
-    WAIT_MEDIUM = 7
-    WAIT_SHORT = 2
-    MAX_COUNT_APPLICATION_ATTEMPTS = 100
-
-    class String(Const):
-        UNABLE_TO_ANSWER = 'Unable to answer all questions'
-        NOT_ENOUGH_KEYWORD_MATCHES = 'Not enough keyword matches in the description'
-        QUESTION_LABELS_AND_INPUTS_MISMATCH = 'The number of labels and question input elements do not match'

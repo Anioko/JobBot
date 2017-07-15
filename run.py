@@ -36,5 +36,6 @@ if __name__ == "__main__":
                             "last_active" : "30",
                             "excluded_keywords": ["unpaid"]
                             }
-        bot.gather(query_parameters)
+        #bot.gather(query_parameters)
+        bot.apply()
         bot.shut_down()
