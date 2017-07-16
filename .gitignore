@@ -56,5 +56,4 @@ __pycache__/
 *.db
 *.db-journal
 *.log
-blurbs.txt
 /blurbs.json

@@ -132,10 +132,19 @@ class ApplicationBuilder:
 
         for b_id in best_blurb_ids:
             blurb = Blurb.get(Blurb.id == b_id)
-            message_body += ABConstants.BULLET_POINT + blurb.text + "\n"
+            if self.user_config.Settings.USE_LONG_TEXT:
+                string_blurb = ABConstants.BULLET_POINT + blurb.long_text + "\n"
+            else:
+                string_blurb = ABConstants.BULLET_POINT + blurb.short_text + "\n"
+            message_body += string_blurb
 
-        final_message = "{0}\n{1}\n\n{2}".format(blurb_intro.text, message_body, blurb_end.text)
-        return final_message.replace(ABConstants.REPLACE_COMPANY_STRING, company)
+        # TODO: Figure out how not to repeat this condition check
+        if self.user_config.Settings.USE_LONG_TEXT:
+            final_message = "{0}\n\n{1}\n{2}".format(blurb_intro.long_text, message_body, blurb_end.long_text)
+        else:
+            final_message = "{0}\n\n{1}\n{2}".format(blurb_intro.short_text, message_body, blurb_end.short_text)
+
+        return final_message.replace(ABConstants.COMPANY_PLACEHOLDER, company)
 
     def pick_best_blurbs(self, job_description: str) -> typing.List[str]:
         tokens = nltk.word_tokenize(job_description)

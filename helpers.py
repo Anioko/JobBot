@@ -1,5 +1,6 @@
 import random
 import time
+from selenium.webdriver.common.by import By
 from selenium import webdriver, common
 import typing
 
@@ -61,19 +62,16 @@ def sleep_before_function(func: typing.Callable, wait_time: float):
     return wrapper
 
 
-def does_element_exist(driver: webdriver, identifier: str, use_xpath=True) -> bool:
+def does_element_exist(driver: webdriver, by_selector, identifier: str) -> bool:
     """
     Function that checks if a element exists on the page
     :param driver: selenium.webdriver
+    :param by
     :param identifier: either a ID attribute or an xPath
-    :param use_xpath:
     :return:
     """
     try:
-        if use_xpath:
-            driver.find_element_by_xpath(identifier)
-        else:
-            driver.find_element_by_id(identifier)
+        driver.find_element(by_selector, identifier)
         return True
 
     except common.exceptions.NoSuchElementException:

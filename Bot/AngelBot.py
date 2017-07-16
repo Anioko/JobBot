@@ -10,7 +10,7 @@ import json
 import peewee
 from models import Job
 
-from helpers import Const
+from helpers import Const, sleep_before_function, does_element_exist
 import re
 from typing import Optional
 import time
@@ -40,7 +40,7 @@ class AngelBot(Robot):
 
         assert self._is_authenticated()
 
-        string_parameters = AngelBot._encode_parameters(query_parameters)
+        string_parameters = AngelBot.encode_parameters(query_parameters)
         self.driver.get(AngelConstants.URL.JOBS + string_parameters)
 
         # Check if any jobs have loaded
@@ -67,8 +67,8 @@ class AngelBot(Robot):
                     print(e)
 
     def apply(self):
-        jobs = Job\
-            .select()\
+        jobs = Job \
+            .select() \
             .where(
             (Job.applied == False) &
             (Job.good_fit == True) &
@@ -87,7 +87,15 @@ class AngelBot(Robot):
         self.driver.get(job.link)
         self.attempt_application(job)
         self._get_job_information(job)
+        if self._fill_application(job):
+            self.successful_application(job, dry_run=self.user_config.Settings.IS_DRY_RUN)
+        else:
+            self.failed_application(job)
 
+        job.save()
+
+    @sleep_before_function(RobotConstants.WAIT_ULTRA_LONG)
+    def _fill_application(self, job: Job):
         user_note = self.application_builder.generate_message(
             company=job.company,
             description=job.description
@@ -104,34 +112,37 @@ class AngelBot(Robot):
                 if not self.user_config.Settings.IS_DRY_RUN:
                     self.driver.find_element(By.XPATH, AngelConstants.XPath.APPLY).click()
 
-                self.successful_application(job, dry_run=self.user_config.Settings.IS_DRY_RUN)
+                # PROMPT: Select the locations you are willing to relocate to:
+                if does_element_exist(self.driver, By.XPATH, AngelConstants.XPath.UNSELECTED_CITIES):
+                    try:
+                        unselected_elements = self.driver.find_elements(By.XPATH, AngelConstants.XPath.UNSELECTED_CITIES)
+                        for element in unselected_elements:
+                            element.click()
+                        self.driver.find_element(By.XPATH, AngelConstants.XPath.DONE).click()
+                    except Exception as e:
+                        print(str(e))
+                        job.error = str(e)
+                        return False
+
+                return True
 
             except common.exceptions.NoSuchElementException as e:
                 job.error = str(e)
+                return False
 
             except common.exceptions.WebDriverException as e:
                 if len(user_note) > AngelConstants.Constraints.MAX_LENGTH_USER_NOTE:
                     job.error = AngelConstants.Error.USER_NOTE_TOO_LONG
-                    self.failed_application(job)
-                else:
-                    try:
-                        self._resize_textarea(element_user_note)
-                    except Exception as e:
-                        print(str(e))
+                    return False
         else:
             job.error = RobotConstants.String.NOT_ENOUGH_KEYWORD_MATCHES
-            self.failed_application(job)
-
-        job.save()
+            return False
 
     def _get_job_information(self, job: Job):
         element_job_description = self.driver.find_element(By.XPATH, AngelConstants.XPath.JOB_DESCRIPTION)
         element_job_company = self.driver.find_element(By.XPATH, AngelConstants.XPath.JOB_COMPANY)
         job.description = element_job_description.text
         job.company = element_job_company.get_attribute('text').strip()
-
-    def _resize_textarea(self, element_textarea):
-        self.driver.execute_script("arguments[0].setAttribute('style', 'WIDTH:500px;');", element_textarea)
 
     def _is_authenticated(self) -> bool:
         try:
@@ -140,8 +151,7 @@ class AngelBot(Robot):
         except common.exceptions.NoSuchElementException as e:
             return False
 
-    @staticmethod
-    def _encode_parameters(dict_parameters: dict) -> str:
+    def encode_parameters(self, dict_parameters: dict) -> str:
         """
         Function to encode the query parameters how Angel.co likes them
         :param dict_parameters:
@@ -149,11 +159,11 @@ class AngelBot(Robot):
         """
         dict_copy = dict_parameters.copy()
         string_parameters = json.dumps(dict_copy)
-        return string_parameters.\
-            replace(',','%2C').\
-            replace(':','%3A').\
-            replace('[','%5B').\
-            replace(']','%5D')
+        return string_parameters. \
+            replace(',', '%2C'). \
+            replace(':', '%3A'). \
+            replace('[', '%5B'). \
+            replace(']', '%5D')
 
     def _scroll_infinitely(self):
         last_height = self.driver.execute_script("return document.body.scrollHeight")
@@ -193,6 +203,8 @@ class AngelConstants(Const):
         # There's 4 of these on each page, select first element
         USER_NOTE = r"//textarea[contains(@class,'user-note-textarea')]"
         APPLY = r"//button[contains(@class,'js-apply-button')]"
+        UNSELECTED_CITIES = r"//div[contains(@class, 'unselected')]"
+        DONE = r"//div[contains(@class, 'js-done')]"
 
     class Class(Const):
         USER_NOTE = 'user_note-textarea'
@@ -206,4 +218,3 @@ class AngelConstants(Const):
     class PauseTime(Const):
         SCROLL = 1
         JOBS_LOADED = 7
-

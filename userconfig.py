@@ -14,6 +14,7 @@ class UserConfig(Const):
     class Settings(Const):
         # Booleans
         USE_ALT_END_TAG = True
+        USE_LONG_TEXT = False
         IS_DRY_RUN = False
         WILL_RELOAD_TAGS_AND_BLURBS = True
 
