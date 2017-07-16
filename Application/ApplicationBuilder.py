@@ -1,6 +1,7 @@
 from models import Blurb, Tag
-from run import UserConfig
+from userconfig import UserConfig
 import nltk
+import json
 import re
 from models import Question
 import peewee
@@ -114,19 +115,19 @@ class ApplicationBuilder:
         :param alt_end_tag:
         :return:
         """
-        intro_tag = Tag.get(Tag.text == ABConstants.START_TAG)
+        intro_tag = Tag.get(Tag.text == ABConstants.TagBlurb.TAG_START)
         if self.user_config.Settings.USE_ALT_END_TAG:
-            end_tag = Tag.get(Tag.text == ABConstants.END_TAG_ALT)
+            tag_end = Tag.get(Tag.text == ABConstants.TagBlurb.TAG_END_ALT)
         else:
-            end_tag = Tag.get(Tag.text == ABConstants.END_TAG)
+            tag_end = Tag.get(Tag.text == ABConstants.TagBlurb.TAG_END)
 
         blurb_intro = Blurb.get(Blurb.id == intro_tag.blurb.id)
-        blurb_end = Blurb.get(Blurb.id == end_tag.blurb.id)
+        blurb_end = Blurb.get(Blurb.id == tag_end.blurb.id)
 
         best_blurb_ids = self.pick_best_blurbs(description)
         message_body = ''
         # If not enough blurbs
-        if len(set(best_blurb_ids)) < self.user_config.Settings.MINIMUM_NUMBER_MATCHING_KEYWORDS:
+        if len(best_blurb_ids) < self.user_config.Settings.MINIMUM_NUMBER_MATCHING_KEYWORDS:
             return None
 
         for b_id in best_blurb_ids:
@@ -149,20 +150,18 @@ class ApplicationBuilder:
                 blurb_id_list.append(tag.blurb.id)
 
         # Avoid blurb repeats
-        return sorted(set(blurb_id_list))
+        return list(set(blurb_id_list))
 
     def read_tag_blurbs(self, file_path: str):
-        with open(file_path, "r") as f:
-            content = f.read()
-            list_list_tags = re.findall(ABConstants.REGEX_TAGS_CAPTURE, content)
-            list_blurbs = re.findall(ABConstants.REGEX_BLURB_CAPTURE, content)
-            if len(list_list_tags) == len(list_blurbs):
-                for i in range(0, len(list_blurbs)):
-                    list_tags = list_list_tags[i].split(',')
-                    blurb_id = self.create_blurb(list_blurbs[i].strip())
-                    self.add_tags_to_blurb(list_tags, blurb_id)
-            else:
-                print('Length of tags and blurbs do not match. Perhaps you have a formatting error?')
+        with open(file_path, 'r') as fp:
+            content = json.load(fp)
+        blurbs = content[ABConstants.TagBlurb.KEY_BLURBS]
+        for json_blurb in blurbs:
+            blurb = Blurb.create(
+                long_text=json_blurb[ABConstants.TagBlurb.KEY_BLURB_LONG_TEXT],
+                short_text=json_blurb[ABConstants.TagBlurb.KEY_BLURB_SHORT_TEXT]
+            )
+            self.add_tags_to_blurb(json_blurb[ABConstants.TagBlurb.KEY_BLURB_TAGS], blurb.id)
 
     @staticmethod
     def get_blurbs():
@@ -171,11 +170,6 @@ class ApplicationBuilder:
     @staticmethod
     def get_tags():
         return Tag.select()
-
-    @staticmethod
-    def create_blurb(blurb_text: str) -> int:
-        b = Blurb.create(text=blurb_text)
-        return b.id
 
     def add_tags_to_blurb(self, tags, blurb_id: int):
         query = Blurb.select().where(Blurb.id == blurb_id)

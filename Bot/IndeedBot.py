@@ -1,6 +1,6 @@
 import peewee
 from selenium.webdriver.firefox.webelement import FirefoxWebElement
-from selenium import webdriver, common
+from selenium import common
 from helpers import sleep_after_function, Const
 from constants import HTML
 from models import Job, Question
@@ -15,7 +15,7 @@ QuestionLabelElement = namedtuple('QuestionLabelElement', 'label element')
 
 class IndeedRobot(Robot):
     def __init__(self, user_config, dry_run=False, reload_tags_blurbs=True):
-        super().__init__(user_config, dry_run=dry_run, reload_tags_blurbs=reload_tags_blurbs)
+        super().__init__(user_config)
 
     def search_with_api(self, params: dict):
         client = IndeedClient(publisher=self.user_config.INDEED_API_KEY)

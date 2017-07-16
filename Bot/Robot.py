@@ -4,7 +4,7 @@ from models import Job, Question
 from selenium import webdriver
 from Application.ApplicationBuilder import ApplicationBuilder
 from datetime import datetime
-from run import UserConfig
+from userconfig import UserConfig
 
 
 class RobotConstants(Const):
@@ -44,8 +44,8 @@ class Robot(ABC):
 
         if self.user_config.Settings.WILL_RELOAD_TAGS_AND_BLURBS:
             self.application_builder.reset_all_tables()
-            print('Initializing Tags and Blurbs from {0}'.format(self.user_config.Path.TAG_BLURBS))
-            self.application_builder.read_tag_blurbs(self.user_config.Path.TAG_BLURBS)
+            print('Initializing Tags and Blurbs from {0}'.format(self.user_config.Path.JSON_TAG_BLURBS))
+            self.application_builder.read_tag_blurbs(self.user_config.Path.JSON_TAG_BLURBS)
 
     @staticmethod
     def attempt_application(job: Job) -> str:

@@ -57,7 +57,8 @@ These next two models are for the application builder
 
 class Blurb(BaseModel):
     id = PrimaryKeyField()
-    text = TextField(null=False)
+    long_text = TextField(null=False)
+    short_text = TextField(null=False)
     score = IntegerField(default=1)
 
     @staticmethod

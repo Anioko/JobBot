@@ -3,16 +3,18 @@ import re
 
 
 class ApplicationBuilderConstants(Const):
-    """
-    The two regex captures in this class determine how you should
-    format your file that contains tags and blurbs
-    """
-    REGEX_TAGS_CAPTURE = re.compile(r"'''(.*?)'''", re.DOTALL)
-    REGEX_BLURB_CAPTURE = re.compile(r'"""(.*?)"""', re.DOTALL)
-    START_TAG = 'start_tag'
-    END_TAG = 'end_tag'
-    END_TAG_ALT = 'end_tag_alt'
-    REPLACE_COMPANY_STRING = r'{COMPANY}'
+    class TagBlurb(Const):
+        KEY_BLURBS = 'blurbs'
+        KEY_BLURB_TAGS = 'tags'
+        KEY_BLURB_LONG_TEXT = 'longText'
+        KEY_BLURB_SHORT_TEXT = 'shortText'
+        KEY_BLURB_SCORE = 'score'
+
+        TAG_START = 'start_tag'
+        TAG_END = 'end_tag'
+        TAG_END_ALT = 'end_tag_alt'
+
+    COMPANY_PLACEHOLDER = r'{{COMPANY}}'
     BULLET_POINT = "-"
 
     # Possible websites

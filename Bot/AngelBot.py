@@ -5,7 +5,7 @@ from selenium import webdriver, common
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from run import UserConfig
+from userconfig import UserConfig
 import json
 import peewee
 from models import Job
@@ -98,15 +98,26 @@ class AngelBot(Robot):
                 apply_now_element.click()
 
                 job.message = user_note
-                self.driver.find_element(By.XPATH, AngelConstants.XPath.USER_NOTE).send_keys(user_note)
+                element_user_note = self.driver.find_element(By.XPATH, AngelConstants.XPath.USER_NOTE)
+                element_user_note.send_keys(user_note)
 
-                if not self.user_config.Settings.DRY_RUN:
+                if not self.user_config.Settings.IS_DRY_RUN:
                     self.driver.find_element(By.XPATH, AngelConstants.XPath.APPLY).click()
 
-                self.successful_application(job, dry_run=self.user_config.Settings.DRY_RUN)
+                self.successful_application(job, dry_run=self.user_config.Settings.IS_DRY_RUN)
 
             except common.exceptions.NoSuchElementException as e:
                 job.error = str(e)
+
+            except common.exceptions.WebDriverException as e:
+                if len(user_note) > AngelConstants.Constraints.MAX_LENGTH_USER_NOTE:
+                    job.error = AngelConstants.Error.USER_NOTE_TOO_LONG
+                    self.failed_application(job)
+                else:
+                    try:
+                        self._resize_textarea(element_user_note)
+                    except Exception as e:
+                        print(str(e))
         else:
             job.error = RobotConstants.String.NOT_ENOUGH_KEYWORD_MATCHES
             self.failed_application(job)
@@ -118,6 +129,9 @@ class AngelBot(Robot):
         element_job_company = self.driver.find_element(By.XPATH, AngelConstants.XPath.JOB_COMPANY)
         job.description = element_job_description.text
         job.company = element_job_company.get_attribute('text').strip()
+
+    def _resize_textarea(self, element_textarea):
+        self.driver.execute_script("arguments[0].setAttribute('style', 'WIDTH:500px;');", element_textarea)
 
     def _is_authenticated(self) -> bool:
         try:
@@ -155,6 +169,12 @@ class AngelBot(Robot):
 class AngelConstants(Const):
     WEBSITE_NAME = 'Angel'
 
+    class Constraint(Const):
+        MAX_LENGTH_USER_NOTE = 1000
+
+    class Error(Const):
+        USER_NOTE_TOO_LONG = 'The generated user note is too long'
+
     class URL(Const):
         BASE = r'https://angel.co/'
         LOGIN = r'https://angel.co/login'
@@ -173,6 +193,9 @@ class AngelConstants(Const):
         # There's 4 of these on each page, select first element
         USER_NOTE = r"//textarea[contains(@class,'user-note-textarea')]"
         APPLY = r"//button[contains(@class,'js-apply-button')]"
+
+    class Class(Const):
+        USER_NOTE = 'user_note-textarea'
 
     class CSSSelector(Const):
         APPLY_NOW = r"div.buttons.js-apply.applicant-flow-dropdown > a"
