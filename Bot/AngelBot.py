@@ -5,7 +5,7 @@ from selenium import webdriver, common
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from userconfig import UserConfig
+from run import UserConfig
 import json
 import peewee
 from models import Job
@@ -20,8 +20,6 @@ class AngelBot(Robot):
     def __init__(self, user_config: UserConfig, dry_run=False, reload_tags_blurbs=True):
         super().__init__(
             user_config=user_config,
-            dry_run=dry_run,
-            reload_tags_blurbs=reload_tags_blurbs,
             driver=RobotConstants.Driver.CHROME
         )
 
@@ -71,7 +69,12 @@ class AngelBot(Robot):
     def apply(self):
         jobs = Job\
             .select()\
-            .where((Job.applied == False) & (Job.good_fit == True) & (Job.website == AngelConstants.WEBSITE_NAME))
+            .where(
+            (Job.applied == False) &
+            (Job.good_fit == True) &
+            (Job.website == AngelConstants.WEBSITE_NAME) &
+            (Job.attempted == False)
+        )
 
         for count, job in enumerate(jobs):
             if count > RobotConstants.MAX_COUNT_APPLICATION_ATTEMPTS:
@@ -82,16 +85,39 @@ class AngelBot(Robot):
 
     def _apply_single_job(self, job: Job):
         self.driver.get(job.link)
+        self.attempt_application(job)
         self._get_job_information(job)
 
-        apply_element = self.driver.find_element(By.CSS_SELECTOR, AngelConstants.CSSSelector.APPLY)
+        user_note = self.application_builder.generate_message(
+            company=job.company,
+            description=job.description
+        )
+        if user_note is not None:
+            try:
+                apply_now_element = self.driver.find_element(By.CSS_SELECTOR, AngelConstants.CSSSelector.APPLY_NOW)
+                apply_now_element.click()
+
+                job.message = user_note
+                self.driver.find_element(By.XPATH, AngelConstants.XPath.USER_NOTE).send_keys(user_note)
+
+                if not self.user_config.Settings.DRY_RUN:
+                    self.driver.find_element(By.XPATH, AngelConstants.XPath.APPLY).click()
+
+                self.successful_application(job, dry_run=self.user_config.Settings.DRY_RUN)
+
+            except common.exceptions.NoSuchElementException as e:
+                job.error = str(e)
+        else:
+            job.error = RobotConstants.String.NOT_ENOUGH_KEYWORD_MATCHES
+            self.failed_application(job)
 
         job.save()
 
     def _get_job_information(self, job: Job):
         element_job_description = self.driver.find_element(By.XPATH, AngelConstants.XPath.JOB_DESCRIPTION)
+        element_job_company = self.driver.find_element(By.XPATH, AngelConstants.XPath.JOB_COMPANY)
         job.description = element_job_description.text
-        print(job.description)
+        job.company = element_job_company.get_attribute('text').strip()
 
     def _is_authenticated(self) -> bool:
         try:
@@ -141,10 +167,15 @@ class AngelConstants(Const):
     class XPath(Const):
         LOGGED_IN = r"//div[string(@data-user_id)]"
         JOB_LISTING_LINK = r"//div[@class='listing-row']//div[@class='title']/a"
+        # Get these when on indiviual company page
         JOB_DESCRIPTION = r"//div[contains(@class,'job-description')]"
+        JOB_COMPANY = r"//a[@class='c-navbar-item'][@data-bounds_target='.hero']"
+        # There's 4 of these on each page, select first element
+        USER_NOTE = r"//textarea[contains(@class,'user-note-textarea')]"
+        APPLY = r"//button[contains(@class,'js-apply-button')]"
 
     class CSSSelector(Const):
-        APPLY = r"div.buttons.js-apply.applicant-flow-dropdown > a"
+        APPLY_NOW = r"div.buttons.js-apply.applicant-flow-dropdown > a"
 
     class Regex(Const):
         JOB_KEY_FROM_URL = re.compile('(\d+)-')

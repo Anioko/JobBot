@@ -4,7 +4,7 @@ from models import Job, Question
 from selenium import webdriver
 from Application.ApplicationBuilder import ApplicationBuilder
 from datetime import datetime
-from userconfig import UserConfig
+from run import UserConfig
 
 
 class RobotConstants(Const):
@@ -30,11 +30,8 @@ class Robot(ABC):
     def __init__(
             self,
             user_config: UserConfig,
-            dry_run=False,
-            reload_tags_blurbs=True,
             driver=RobotConstants.Driver.FIREFOX
     ):
-        self.DRY_RUN = dry_run
         self.user_config = user_config
         if driver == RobotConstants.Driver.CHROME:
             self.driver = webdriver.Chrome()
@@ -45,10 +42,10 @@ class Robot(ABC):
 
         self._create_tables()
 
-        if reload_tags_blurbs:
+        if self.user_config.Settings.WILL_RELOAD_TAGS_AND_BLURBS:
             self.application_builder.reset_all_tables()
-            print('Initializing Tags and Blurbs from {0}'.format(user_config.PATH_TAG_BLURBS))
-            self.application_builder.read_tag_blurbs(user_config.PATH_TAG_BLURBS)
+            print('Initializing Tags and Blurbs from {0}'.format(self.user_config.Path.TAG_BLURBS))
+            self.application_builder.read_tag_blurbs(self.user_config.Path.TAG_BLURBS)
 
     @staticmethod
     def attempt_application(job: Job) -> str:

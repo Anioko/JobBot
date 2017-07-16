@@ -1,6 +1,27 @@
+import os
+
 from Bot.IndeedBot import IndeedRobot
 from Bot.AngelBot import AngelBot
-from userconfig import UserConfig
+from helpers import Const
+
+
+class UserConfig(Const):
+    EMAIL = os.environ['EMAIL']
+    PASSWORD = os.environ['PASSWORD']
+    INDEED_API_KEY = os.environ['INDEED_API_KEY']
+
+    class Path(Const):
+        TAG_BLURBS = r'blurbs.txt'
+
+    class Settings(Const):
+        # Booleans
+        USE_ALT_END_TAG = True
+        IS_DRY_RUN = True
+        WILL_RELOAD_TAGS_AND_BLURBS = True
+
+        MINIMUM_NUMBER_MATCHING_KEYWORDS = 3
+        DEFAULT_EXPERIENCE = None
+
 
 if __name__ == "__main__":
     INDEED = False

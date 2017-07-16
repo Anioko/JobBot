@@ -28,6 +28,7 @@ class Job(BaseModel):
     # Application fields
     easy_apply = BooleanField(default=False)
     applied = BooleanField(default=False)
+    attempted = BooleanField(default=False)
     access_date = DateField(null=True)
     error = TextField(null=True)
     message = TextField(null=True)
@@ -44,6 +45,7 @@ class Question(BaseModel):
     label = TextField(primary_key=True)
     answer = TextField(null=True)
     website = CharField(null=False)
+    temporary = BooleanField(default=False)
     input_type = CharField(null=False)
     secondary_input_type = CharField(null=True)
     question_type = CharField(null=True)

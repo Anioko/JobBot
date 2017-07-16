@@ -1,5 +1,5 @@
 from models import Blurb, Tag
-from userconfig import UserConfig
+from run import UserConfig
 import nltk
 import re
 from models import Question
@@ -9,7 +9,7 @@ import typing
 from models import Job
 
 class ApplicationBuilder:
-    def __init__(self, user_config):
+    def __init__(self, user_config: UserConfig):
         # Create tables
         Blurb.create_table(fail_silently=True)
         Tag.create_table(fail_silently=True)
@@ -31,15 +31,16 @@ class ApplicationBuilder:
         :return:
         """
         if ABConstants.QuestionNeedle.MESSAGE in question_label:
-            job.message = self.generate_message(job.description, job.company, alt_end_tag=self.user_config.USE_ALT_END_TAG)
+            job.message = self.generate_message(job.description, job.company)
             return job.message
 
         try:
             question = Question.get(Question.label == question_label)
             if question.answer is None:
                 if question.question_type == ABConstants.QuestionTypes.EXPERIENCE:
-                    if default_experience_answer:
-                        return UserConfig.DEFAULT_YEARS_EXPERIENCE
+                    if self.user_config.Settings.DEFAULT_EXPERIENCE is not None:
+                        question.answer = self.user_config.Settings.DEFAULT_EXPERIENCE
+                        return question.answer
                 if question.question_type == ABConstants.QuestionTypes.LOCATION:
                     if ('vancouver, bc' not in question.label) and ('burnaby, bc' not in question.label):
                         question.answer = 'No'
@@ -102,7 +103,7 @@ class ApplicationBuilder:
         except peewee.IntegrityError:
             pass
 
-    def generate_message(self, description: str, company: str, contain_min_blurbs=True, alt_end_tag=False) -> typing.Optional[str]:
+    def generate_message(self, description: str, company: str) -> typing.Optional[str]:
         """
         Returns a generated message based on the job description and company
         If 'containMinBlurbs' == True, then return None if not enough tags are in description
@@ -114,7 +115,7 @@ class ApplicationBuilder:
         :return:
         """
         intro_tag = Tag.get(Tag.text == ABConstants.START_TAG)
-        if alt_end_tag:
+        if self.user_config.Settings.USE_ALT_END_TAG:
             end_tag = Tag.get(Tag.text == ABConstants.END_TAG_ALT)
         else:
             end_tag = Tag.get(Tag.text == ABConstants.END_TAG)
@@ -125,7 +126,7 @@ class ApplicationBuilder:
         best_blurb_ids = self.pick_best_blurbs(description)
         message_body = ''
         # If not enough blurbs
-        if contain_min_blurbs and len(set(best_blurb_ids)) < self.user_config.MIN_BLURBS:
+        if len(set(best_blurb_ids)) < self.user_config.Settings.MINIMUM_NUMBER_MATCHING_KEYWORDS:
             return None
 
         for b_id in best_blurb_ids:
@@ -198,7 +199,7 @@ class ApplicationBuilder:
         Tag.create_table(fail_silently=True)
 
 if __name__ == "__main__":
-    a = ApplicationBuilder(UserConfig)
+    a = ApplicationBuilder(UserConfig())
     desc = '''Co-Op – Applications and Testing 
 Insurance Corporation of British Columbia  73 reviews - North Vancouver, BC
 A career at ICBC is an opportunity to be part of a talented, diverse and inclusive team that is driven to serve its customers and community. Make the most of your skills and take the opportunity to grow and develop your career. You can expect a competitive salary, comprehensive benefits and a challenging work environment. Drive your career with us.
