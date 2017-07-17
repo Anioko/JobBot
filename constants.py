@@ -1,7 +1,7 @@
 from helpers import Const
 
 
-class HTML(Const):
+class HTMLConstants(Const):
 
     class TagType(Const):
         DIV = 'div'
@@ -18,6 +18,7 @@ class HTML(Const):
         ID = 'id'
         INNER_TEXT = 'innerText'
         NAME = 'name'
+        FOR = 'for'
 
     class InputTypes(Const):
         RADIO = 'radio'

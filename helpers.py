@@ -1,8 +1,11 @@
 import random
 import time
+from typing import Callable, List
+import nltk
+
 from selenium.webdriver.common.by import By
 from selenium import webdriver, common
-import typing
+
 
 """
 Point of these two classes is to allow me to make a constant object dictionary.
@@ -42,7 +45,7 @@ def _parametrized(dec):
 
 # TODO: Maybe add parameter for how random delta amount
 @_parametrized
-def sleep_after_function(func: typing.Callable, wait_time: float):
+def sleep_after_function(func: Callable, wait_time: float):
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
         random_wait_time = random.uniform(wait_time * .9, wait_time * 1.2)
@@ -53,7 +56,7 @@ def sleep_after_function(func: typing.Callable, wait_time: float):
 
 
 @_parametrized
-def sleep_before_function(func: typing.Callable, wait_time: float):
+def sleep_before_function(func: Callable, wait_time: float):
     def wrapper(*args, **kwargs):
         random_wait_time = random.uniform(wait_time * .9, wait_time * 1.2)
         time.sleep(random_wait_time)
@@ -76,3 +79,13 @@ def does_element_exist(driver: webdriver, by_selector, identifier: str) -> bool:
 
     except common.exceptions.NoSuchElementException:
         return False
+
+
+def any_in(a: list, b: list) -> bool:
+    return any(i in b for i in a)
+
+def tokenize_text(text:str) -> List[str]:
+    tokens = nltk.word_tokenize(text)
+    tokens = set([word.lower() for word in tokens if word.isalpha()])
+    tokens = [word for word in tokens if word not in nltk.corpus.stopwords.words('english')]
+    return tokens

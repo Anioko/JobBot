@@ -4,6 +4,9 @@ from helpers import Const
 class IndeedConstants(Const):
     WEBSITE_NAME = 'Indeed'
 
+    # LOGIN
+    URL_LOGIN = r'https://secure.indeed.com/account/login'
+
     # SEARCH STAGE
     class API(Const):
         DATE_FORMAT =  '%a, %d %b %Y %H:%M:%S %Z'
@@ -12,6 +15,8 @@ class IndeedConstants(Const):
     # APPLICATION STAGE
     class XPath(Const):
         APPLY_SPAN = r"//span[contains(@class, 'indeed-apply-button-label')]"
+        DIFFERENT_RESUME = r"//a[contains(text(),'Apply with a different resume?')]"
+
         BUTTON_CONT = r"//div[contains(@id,'continue-div')]//div//a"
         BUTTON_APPLY = r"//div[contains(@id,'apply-div')]//div//input"
 
@@ -26,6 +31,8 @@ class IndeedConstants(Const):
             return unformatted_xpath_radio_button.format(answer, radio_name)
 
     class Id(Const):
+        LOGIN_EMAIL = 'signin_email'
+        LOGIN_PASSWORD = 'signin_password'
         JOB_SUMMARY = 'job_summary'
         INPUT_APPLICANT_NAME = 'applicant.name'
         INPUT_APPLICANT_EMAIL = 'applicant.email'

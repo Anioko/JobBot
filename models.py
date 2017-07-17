@@ -1,8 +1,12 @@
-import datetime
 from typing import Optional
 from peewee import *
+from helpers import Const
 
 db = SqliteDatabase('job_database.db')
+
+
+class ModelConstants(Const):
+    DELIMITER = ','
 
 
 class BaseModel(Model):
@@ -43,29 +47,39 @@ class Question(BaseModel):
     A model for the questions on Indeed easy apply
     """
 
-    hash = CharField(primary_key=True)
-    label = TextField()
-    tokens = TextField()
+    name = CharField(primary_key=True)
     website = CharField()
     input_type = CharField()
 
+    label = TextField(null=True)
+    tokens = TextField(null=True)
     answer = TextField(null=True)
     secondary_input_type = CharField(null=True)
     question_type = CharField(null=True)
     additional_info = TextField(null=True)
 
 
-class QuestionWrapper(object):
-    @staticmethod
-    def create_question(
-            label:str,
-            website:str,
-            input_type:str,
-            secondary_input_type=None,
-            additional_info=None
-    ):
-        pass
+def create_question_from_model(q: Question) -> Optional[Question]:
+    try:
+        question = Question.create(
+            name=q.name,
+            label=q.label,
+            tokens=q.tokens,
+            website=q.website,
+            input_type=q.input_type,
+            secondary_input_type=q.secondary_input_type,
+            answer=q.answer,
+            question_type=q.question_type,
+            additional_info=q.additional_info
+        )
+        return question
 
+    except IntegrityError as e:
+        if 'UNIQUE' in str(e):
+            pass
+        else:
+            print(str(e))
+        return None
 """
 These next two models are for the application builder
 """
@@ -82,7 +96,7 @@ class Blurb(BaseModel):
         return "Blurb Header\nid :: Blurb\n\n"
 
     def __str__(self):
-        return "{0} :: {1}".format(self.id, self.text)
+        return "{0} :: {1}".format(self.id, self.short_text)
 
 
 class Tag(BaseModel):

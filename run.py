@@ -24,10 +24,11 @@ if __name__ == "__main__":
             'useragent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
         }
         #bot.search_with_api(params=params)
+        bot.login()
         bot.apply_jobs()
         bot.shut_down()
     else:
-        bot = AngelBot(UserConfig(), dry_run=False)
+        bot = AngelBot(UserConfig())
         bot.login()
         query_parameters = {"types": "internship",
                             "roles": [

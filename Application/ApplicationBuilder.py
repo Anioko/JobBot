@@ -1,13 +1,13 @@
-from models import Blurb, Tag
-from userconfig import UserConfig
-import nltk
 import json
-import re
-from models import Question
-import peewee
-from Application.constants import ApplicationBuilderConstants as ABConstants
 import typing
-from models import Job
+
+import peewee
+
+from Application.constants import ApplicationBuilderConstants as ABConstants
+from userconfig import UserConfig
+from models import Blurb, Tag, Question, create_question_from_model
+from helpers import tokenize_text, any_in
+
 
 class ApplicationBuilder:
     def __init__(self, user_config: UserConfig):
@@ -20,89 +20,40 @@ class ApplicationBuilder:
     def generate_resume(self, description):
         raise NotImplementedError
 
-    def answer_question(self, job: Job, question_label: str, default_experience_answer=False):
-        """
-        This function attempts to answer the question given just it's label
-        1. If the question is asking for a cover-letter it will generate one base on the job description
-        2. If the question is already in the database it will return the 'answer' field, which may be empty
-        3. If it is asking for experience and there is no answer in the database, you can specify a default answer
-        :param job:
-        :param question_label:
-        :param default_experience_answer:
-        :return:
-        """
-        if ABConstants.QuestionNeedle.MESSAGE in question_label:
-            job.message = self.generate_message(job.description, job.company)
-            return job.message
-
-        try:
-            question = Question.get(Question.label == question_label)
-            if question.answer is None:
-                if question.question_type == ABConstants.QuestionTypes.EXPERIENCE:
-                    if self.user_config.Settings.DEFAULT_EXPERIENCE is not None:
-                        question.answer = self.user_config.Settings.DEFAULT_EXPERIENCE
-                        return question.answer
-                if question.question_type == ABConstants.QuestionTypes.LOCATION:
-                    if ('vancouver, bc' not in question.label) and ('burnaby, bc' not in question.label):
-                        question.answer = 'No'
-                    else:
-                        question.answer = 'Yes'
-
-            return question.answer
-
-        except peewee.DoesNotExist:
-            pass
-
-        return None
-
-    @staticmethod
-    def get_question_from_label(question_label: str) -> typing.Optional[Question]:
-        try:
-            return Question.get(Question.label == question_label)
-        except peewee.DoesNotExist:
-            return None
-
     @staticmethod
     def add_question_to_database(q_object: Question):
-        def _categorize_question(q: Question):
-            # TODO: Change all these to any
-            if ABConstants.QuestionNeedle.RESUME in q.label:
-                q.question_type = ABConstants.QuestionTypes.RESUME
+        def _categorize_question(q_instance: Question):
+            if any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_RESUME):
+                q_instance.question_type = ABConstants.QuestionTypes.RESUME
 
-            elif ABConstants.QuestionNeedle.MESSAGE in q.label:
-                q.question_type = ABConstants.QuestionTypes.MESSAGE
+            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_MESSAGE):
+                q_instance.question_type = ABConstants.QuestionTypes.MESSAGE
 
-            elif any(string in q.label for string in ABConstants.QuestionNeedle.LIST_LOCATION):
-                q.question_type = ABConstants.QuestionTypes.LOCATION
+            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_LOCATION):
+                q_instance.question_type = ABConstants.QuestionTypes.LOCATION
 
-            elif ABConstants.QuestionNeedle.EXPERIENCE in q.label:
-                q.question_type = ABConstants.QuestionTypes.EXPERIENCE
+            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_EXPERIENCE):
+                q_instance.question_type = ABConstants.QuestionTypes.EXPERIENCE
 
-            elif any(string in q.label for string in ABConstants.QuestionNeedle.LIST_EDUCATION):
-                q.question_type = ABConstants.QuestionTypes.EDUCATION
+            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_EDUCATION):
+                q_instance.question_type = ABConstants.QuestionTypes.EDUCATION
 
-            elif ABConstants.QuestionNeedle.LANGUAGE in q.label:
-                q.question_type = ABConstants.QuestionTypes.LANGUAGE
+            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_LANGUAGE):
+                q_instance.question_type = ABConstants.QuestionTypes.LANGUAGE
 
-            elif ABConstants.QuestionNeedle.CERTIFICATION in q.label:
-                q.question_type = ABConstants.QuestionTypes.CERTIFICATION
+            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_CERTIFICATION):
+                q_instance.question_type = ABConstants.QuestionTypes.CERTIFICATION
 
-            elif any(string in q.label for string in ABConstants.QuestionNeedle.LIST_CONTACT_INFO):
-                q.question_type = ABConstants.QuestionTypes.CONTACT_INFO
+            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_CONTACT_INFO):
+                q_instance.question_type = ABConstants.QuestionTypes.CONTACT_INFO
 
-            q.save()
+            elif ABConstants.QuestionNeedle.NAME_MULTI_ATTACH in q_instance.name:
+                q_instance.question_type = ABConstants.QuestionTypes.ADDITONAL_ATTACHMENTS
+            q_instance.save()
 
-        try:
-            q = Question.create(
-                label=q_object.label,
-                website=q_object.website,
-                input_type=q_object.input_type,
-                secondary_input_type=q_object.secondary_input_type
-            )
+        q = create_question_from_model(q_object)
+        if q is not None:
             _categorize_question(q)
-
-        except peewee.IntegrityError:
-            pass
 
     def generate_message(self, description: str, company: str) -> typing.Optional[str]:
         """
@@ -147,10 +98,7 @@ class ApplicationBuilder:
         return final_message.replace(ABConstants.COMPANY_PLACEHOLDER, company)
 
     def pick_best_blurbs(self, job_description: str) -> typing.List[str]:
-        tokens = nltk.word_tokenize(job_description)
-        word_list = set([word.lower() for word in tokens if word.isalpha()])
-        # Remove stopwords (the, a)
-        key_words = [word for word in word_list if word not in nltk.corpus.stopwords.words('english')]
+        key_words = tokenize_text(job_description)
 
         blurb_id_list = []
         for word in key_words:

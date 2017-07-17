@@ -24,14 +24,16 @@ class ApplicationBuilderConstants(Const):
         """
         Constants used to determine which question type the question is
         """
-        RESUME = 'resume'
-        MESSAGE = 'cover letter'
-        LIST_LOCATION = ['located', 'are you in']
-        EXPERIENCE = 'experience'
-        LANGUAGE = 'do you speak'
-        CERTIFICATION = 'do you have'
-        LIST_EDUCATION = ['education', 'have you completed']
-        LIST_CONTACT_INFO = ['name', 'email', 'phone number']
+        NEEDLES_RESUME = ['resume']
+        NEEDLES_MESSAGE = ['cover', 'letter']
+        NEEDLES_LOCATION = ['located']
+        NEEDLES_EXPERIENCE = ['experience']
+        NEEDLES_LANGUAGE = ['speak']
+        NEEDLES_CERTIFICATION = []
+        NEEDLES_EDUCATION = ['education', 'completed']
+        NEEDLES_CONTACT_INFO = ['name', 'email', 'phone', 'number']
+
+        NAME_MULTI_ATTACH = 'attachments'
 
     # TODO: Use custom field in peewee
     class QuestionTypes(Const):
@@ -43,3 +45,5 @@ class ApplicationBuilderConstants(Const):
         CONTACT_INFO = 'contact_info'
         LANGUAGE = 'language'
         EDUCATION = 'education'
+        ADDITONAL_ATTACHMENTS = 'attachments'
+

@@ -17,11 +17,8 @@ import time
 
 
 class AngelBot(Robot):
-    def __init__(self, user_config: UserConfig, dry_run=False, reload_tags_blurbs=True):
-        super().__init__(
-            user_config=user_config,
-            driver=RobotConstants.Driver.CHROME
-        )
+    def __init__(self, user_config: UserConfig):
+        super().__init__(user_config=user_config, driver=RobotConstants.Driver.CHROME)
 
     def login(self):
         self.driver.get(AngelConstants.URL.LOGIN)

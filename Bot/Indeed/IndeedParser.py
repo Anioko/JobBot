@@ -1,14 +1,42 @@
+from collections import namedtuple, OrderedDict
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict
+
+import nltk
 
 from selenium import webdriver
 from selenium.webdriver.firefox.webelement import FirefoxWebElement
 from selenium import common
 from selenium.webdriver.common.by import By
 
+from constants import HTMLConstants
 from Bot.Indeed.constants import IndeedConstants
-from Bot.Indeed.IndeedBot import QuestionElementPair
-from models import Job
+from models import Job, Question, ModelConstants
+from helpers import tokenize_text
+
+class QuestionLabelElements(object):
+    def __init__(self):
+        self.question = Question()
+        self.label = ''
+        self.element_list = []
+
+    def add_element(self, element):
+        self.element_list.append(element)
+
+    def compute_question(self):
+        first_element:FirefoxWebElement = self.element_list[0]
+
+        # TODO: Add additional infomation using list elements
+        self.question = Question(
+            name=first_element.get_attribute(HTMLConstants.Attributes.NAME),
+            label=self.label,
+            tokens=ModelConstants.DELIMITER.join(tokenize_text(self.label)),
+            website=IndeedConstants.WEBSITE_NAME,
+            input_type=first_element.tag_name,
+            secondary_input_type=first_element.get_attribute(HTMLConstants.Attributes.TYPE)
+        )
+        return self.question
+
 
 class IndeedParser(object):
     def __init__(self):
@@ -46,23 +74,30 @@ class IndeedParser(object):
         return None
 
     @staticmethod
-    def get_questions(driver: webdriver):
-        q_element_labels = driver.find_elements(By.XPATH, IndeedConstants.XPath.ALL_QUESTION_LABELS)
-        q_element_inputs = driver.find_elements(By.XPATH, IndeedConstants.XPath.ALL_QUESTION_INPUTS)
+    def get_dict_qle(driver: webdriver) -> Dict[str, QuestionLabelElements]:
+        q_element_labels: List[FirefoxWebElement] = driver.find_elements(By.XPATH, IndeedConstants.XPath.ALL_QUESTION_LABELS)
+        q_element_inputs: List[FirefoxWebElement] = driver.find_elements(By.XPATH, IndeedConstants.XPath.ALL_QUESTION_INPUTS)
 
-        list_questions = []
-        for i, element_input in enumerate(q_element_inputs):
+        dict_qle: Dict[str, QuestionLabelElements] = OrderedDict()
+        for element_input in q_element_inputs:
+            element_name = element_input.get_attribute(HTMLConstants.Attributes.NAME)
+            if dict_qle.get(element_name, None) is None:
+                qle = QuestionLabelElements()
+                qle.add_element(element_input)
+                qle.question.name = element_name
+                dict_qle[element_name] = qle
+            else:
+                dict_qle[element_name].add_element(element_input)
 
+        for element_label in q_element_labels:
+            element_name = element_label.get_attribute(HTMLConstants.Attributes.FOR)
+            label_text = element_label.text
+            if dict_qle.get(element_name, None) is None:
+                print('No input for label ' + label_text)
+            else:
+                dict_qle[element_name].label = label_text
 
+        for key, qle in dict_qle.items():
+            qle.compute_question()
 
-def group_radio_buttons_by_attribute(html_elements: List[FirefoxWebElement], attribute:str) -> List[FirefoxWebElement]:
-    copy_elements = list(html_elements)
-    previous_attribute = ''
-
-    for i, current_element in enumerate(copy_elements):
-        current_attribute = current_element.get_attribute(attribute)
-        if previous_attribute == current_attribute:
-            copy_elements.pop(i + 1)
-        previous_attribute = current_attribute
-
-    return copy_elements
+        return dict_qle
