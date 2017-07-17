@@ -1,20 +1,26 @@
-import peewee
-from selenium.webdriver.firefox.webelement import FirefoxWebElement
-from selenium import common
-from helpers import sleep_after_function, Const
-from constants import HTML
-from models import Job, Question
-from Bot.Robot import Robot, RobotConstants
 from collections import namedtuple
-from typing import List, Optional
-from indeed import IndeedClient
-from datetime import datetime
+from typing import List
 
-QuestionLabelElement = namedtuple('QuestionLabelElement', 'label element')
+from indeed import IndeedClient
+
+from selenium.webdriver.common.by import By
+from selenium import common
+from selenium.webdriver.firefox.webelement import FirefoxWebElement
+
+from Bot.Indeed.constants import IndeedConstants
+from Bot.Robot import Robot, RobotConstants
+from constants import HTML
+from helpers import sleep_after_function
+from models import Job, Question
+from Bot.Indeed.IndeedParser import IndeedParser
+
+import peewee
+
+QuestionElementPair = namedtuple('QuestionLabelElement', 'question element')
 
 
 class IndeedRobot(Robot):
-    def __init__(self, user_config, dry_run=False, reload_tags_blurbs=True):
+    def __init__(self, user_config):
         super().__init__(user_config)
 
     def search_with_api(self, params: dict):
@@ -22,55 +28,69 @@ class IndeedRobot(Robot):
         search_response = client.search(**params)
 
         total_number_hits = search_response['totalResults']
-        num_loops = int(total_number_hits / IndeedConstants.MAX_NUM_RESULTS_PER_REQUEST)
-        start = 0
+        num_loops = int(total_number_hits / IndeedConstants.API.MAX_NUM_RESULTS_PER_REQUEST)
+        counter_start = 0
+
         print('Total number of hits: {0}'.format(total_number_hits))
         count_jobs_added = 0
+
         for i in range(0, num_loops):
             # We can get around MAX_NUM_RESULTS_PER_REQUEST by increasing our start location on each loop!
-            params['start'] = start
+            params['start'] = counter_start
+
             search_response = client.search(**params)
-            job_results = search_response['results']
-            for job_result in job_results:
-                if job_result['indeedApply']:
-                    try:
-                        parsed_date = datetime.strptime(job_result['date'], '%a, %d %b %Y %H:%M:%S %Z')
-                        Job.create(
-                            job_key=job_result['jobkey'],
-                            link=job_result['url'],
-                            title=job_result['jobtitle'],
-                            company=job_result['company'],
-                            city=job_result['city'],
-                            state=job_result['state'],
-                            country=job_result['country'],
-                            location=job_result['formattedLocation'],
-                            posted_date=parsed_date.date(),
-                            expired=job_result['expired'],
-                            easy_apply=job_result['indeedApply']
-                        )
-                        count_jobs_added += 1
-                    except peewee.IntegrityError as e:
+            list_jobs = IndeedParser.get_jobs_from_response(search_response)
+            for job in list_jobs:
+                try:
+                    # TODO: This sucks, I'm just repeating myself...
+                    Job.create(
+                        key=job.key,
+                        website=job.website,
+                        link=job.link,
+                        title=job.title,
+                        company=job.company,
+                        city=job.city,
+                        state=job.state,
+                        country=job.country,
+                        location=job.location,
+                        posted_date=job.posted_date,
+                        expired=job.expired,
+                        easy_apply=job.easy_apply
+                    )
+                    count_jobs_added += 1
+
+                except peewee.IntegrityError as e:
+                    if 'UNIQUE' in str(e):
                         pass
-            start += IndeedConstants.MAX_NUM_RESULTS_PER_REQUEST
+                    else:
+                        print(str(e))
+
+            # Increment start
+            counter_start += IndeedConstants.API.MAX_NUM_RESULTS_PER_REQUEST
+
         print('Added {0} new jobs'.format(count_jobs_added))
 
     def apply_jobs(self):
         count_applied = 0
 
-        jobs = Job\
-            .select()\
-            .where((Job.applied == False) & (Job.good_fit == True) & (Job.access_date >> None))\
+        jobs = Job \
+            .select() \
+            .where(
+            (Job.website == IndeedConstants.WEBSITE_NAME) &
+            (Job.applied == False) &
+            (Job.good_fit == True)) \
             .order_by(Job.posted_date.desc())
+
         for job in jobs:
             if count_applied > RobotConstants.MAX_COUNT_APPLICATION_ATTEMPTS:
-                print('Max job apply limit reached')
+                print(RobotConstants.String.MAX_ATTEMPTS_REACHED)
                 break
 
-            self._apply_to_single_job(job)
-            count_applied += 1
+            if self._apply_to_single_job(job):
+                count_applied += 1
 
     @sleep_after_function(RobotConstants.WAIT_MEDIUM)
-    def _apply_to_single_job(self, job: Job):
+    def _apply_to_single_job(self, job: Job) -> bool:
         """
         Assuming you are on a job page, presses the apply button and switches to the application
         IFrame. If everything is working properly it call fill_application.
@@ -84,11 +104,10 @@ class IndeedRobot(Robot):
             try:
                 self.driver.get(job.link)
                 # Fill job information
-                job.description = self.driver.find_element_by_id('job_summary').text
+                job.description = self.driver.find_element(By.ID, IndeedConstants.Id.JOB_SUMMARY)
 
-                self.driver.find_element_by_xpath(IndeedConstants.XPATH_APPLY_SPAN).click()
+                self.driver.find_element(By.XPATH, IndeedConstants.XPath.APPLY_SPAN).click()
 
-                # TODO: Find better way to do this!
                 # Switch to application form IFRAME, notice that it is a nested IFRAME
                 self.driver.switch_to.frame(1)
                 self.driver.switch_to.frame(0)
@@ -192,8 +211,6 @@ class IndeedRobot(Robot):
                                 pass
             return False
 
-        q_element_labels = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_LABELS)
-        q_element_inputs = self.driver.find_elements_by_xpath(IndeedConstants.XPATH_ALL_QUESTION_INPUTS)
         # Make grouped radio buttons into only one element, using the name attribute
         q_element_inputs = remove_grouped_elements_by_attribute(q_element_inputs, 'name')
         # TODO: Eventually add labels for multi-attach and attach transcripts
@@ -212,9 +229,9 @@ class IndeedRobot(Robot):
             add_questions_to_database(list_question_label_element)
 
             if answer_questions(list_question_label_element):
-                if not self.DRY_RUN:
+                if not self.user_config.Settings.IS_DRY_RUN:
                     self.driver.find_element_by_xpath(IndeedConstants.XPATH_BUTTON_APPLY).click()
-                self.successful_application(job, dry_run=self.DRY_RUN)
+                self.successful_application(job, dry_run=self.user_config.Settings.IS_DRY_RUN)
                 app_success = True
         else:
             job.error = RobotConstants.String.QUESTION_LABELS_AND_INPUTS_MISMATCH
@@ -225,47 +242,7 @@ class IndeedRobot(Robot):
         return
 
 
-def remove_grouped_elements_by_attribute(html_elements, attribute):
-    copy_elements = list(html_elements)
-    previous_attribute = ''
-    for i in range(len(copy_elements) - 1, -1, -1):
-        current_element = copy_elements[i]
-        current_attribute = current_element.get_attribute(attribute)
-        if previous_attribute == current_attribute:
-            copy_elements.pop(i + 1)
-        previous_attribute = current_attribute
-
-    return copy_elements
-
-
 if __name__ == "__main__":
-    Question.drop_table()
+    pass
 
 
-class IndeedConstants(Const):
-    WEBSITE_NAME = 'Indeed'
-
-    # SEARCH STAGE
-    MAX_NUM_RESULTS_PER_REQUEST = 25
-
-    # APPLICATION STAGE
-    XPATH_APPLY_SPAN = r"//span[contains(@class, 'indeed-apply-button-label')]"
-    ID_INPUT_APPLICANT_NAME = 'applicant.name'
-    ID_INPUT_APPLICANT_EMAIL = 'applicant.email'
-    ID_INPUT_APPLICANT_PHONE = 'applicant.phoneNumber'
-    ID_BUTTON_RESUME = 'resume'
-    ID_INPUT_COVER_LETTER = 'applicant.applicationMessage'
-    XPATH_BUTTON_CONT = r"//div[contains(@id,'continue-div')]//div//a"
-    XPATH_BUTTON_APPLY = r"//div[contains(@id,'apply-div')]//div//input"
-
-    @staticmethod
-    def compute_xpath_radio_button(answer, radio_name):
-        unformatted_xpath_radio_button = "//span[text()='{0}']/preceding-sibling::input[@name='{1}']"
-        return unformatted_xpath_radio_button.format(answer, radio_name)
-
-    # If the continue button is present
-    # TODO: How do we use 'or' here?
-    XPATH_ALL_QUESTION_LABELS = r"//div[contains(@class, 'input-container')]//label"
-    XPATH_ALL_QUESTION_INPUTS = r"//div[contains(@class, 'input-container')]//input | " \
-                          r"//div[contains(@class, 'input-container')]//select | " \
-                          r"//div[contains(@class, 'input-container')]//textarea"

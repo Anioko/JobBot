@@ -1,5 +1,5 @@
 import datetime
-
+from typing import Optional
 from peewee import *
 
 db = SqliteDatabase('job_database.db')
@@ -19,7 +19,7 @@ class Job(BaseModel):
     description = TextField(null=True)
     company = TextField(null=True)
     city = CharField(null=True)
-    state = CharField(null=True)
+    state = CharField(null=True) # TODO: Rename this to region
     country = CharField(null=True)
     posted_date = DateField(null=True)
     expired = BooleanField(default=False)
@@ -42,14 +42,30 @@ class Question(BaseModel):
     """
     A model for the questions on Indeed easy apply
     """
-    label = TextField(primary_key=True)
+
+    hash = CharField(primary_key=True)
+    label = TextField()
+    tokens = TextField()
+    website = CharField()
+    input_type = CharField()
+
     answer = TextField(null=True)
-    website = CharField(null=False)
-    temporary = BooleanField(default=False)
-    input_type = CharField(null=False)
     secondary_input_type = CharField(null=True)
     question_type = CharField(null=True)
     additional_info = TextField(null=True)
+
+
+class QuestionWrapper(object):
+    @staticmethod
+    def create_question(
+            label:str,
+            website:str,
+            input_type:str,
+            secondary_input_type=None,
+            additional_info=None
+    ):
+        pass
+
 """
 These next two models are for the application builder
 """
