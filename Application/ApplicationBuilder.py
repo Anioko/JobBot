@@ -3,7 +3,7 @@ import typing
 
 import peewee
 
-from Application.constants import ApplicationBuilderConstants as ABConstants
+from Application.constants import ApplicationBuilderConstants as ABCs
 from userconfig import UserConfig
 from models import Blurb, Tag, Question, create_question_from_model
 from helpers import tokenize_text, any_in
@@ -23,32 +23,33 @@ class ApplicationBuilder:
     @staticmethod
     def add_question_to_database(q_object: Question):
         def _categorize_question(q_instance: Question):
-            if any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_RESUME):
-                q_instance.question_type = ABConstants.QuestionTypes.RESUME
+            split_tokens = q_instance.tokens.split(',')
+            if any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_RESUME):
+                q_instance.question_type = ABCs.QuestionTypes.RESUME
 
-            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_MESSAGE):
-                q_instance.question_type = ABConstants.QuestionTypes.MESSAGE
+            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_MESSAGE):
+                q_instance.question_type = ABCs.QuestionTypes.MESSAGE
 
-            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_LOCATION):
-                q_instance.question_type = ABConstants.QuestionTypes.LOCATION
+            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_LOCATION):
+                q_instance.question_type = ABCs.QuestionTypes.LOCATION
 
-            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_EXPERIENCE):
-                q_instance.question_type = ABConstants.QuestionTypes.EXPERIENCE
+            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_EXPERIENCE):
+                q_instance.question_type = ABCs.QuestionTypes.EXPERIENCE
 
-            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_EDUCATION):
-                q_instance.question_type = ABConstants.QuestionTypes.EDUCATION
+            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_EDUCATION):
+                q_instance.question_type = ABCs.QuestionTypes.EDUCATION
 
-            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_LANGUAGE):
-                q_instance.question_type = ABConstants.QuestionTypes.LANGUAGE
+            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_LANGUAGE):
+                q_instance.question_type = ABCs.QuestionTypes.LANGUAGE
 
-            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_CERTIFICATION):
-                q_instance.question_type = ABConstants.QuestionTypes.CERTIFICATION
+            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_CERTIFICATION):
+                q_instance.question_type = ABCs.QuestionTypes.CERTIFICATION
 
-            elif any_in(q_instance.tokens, ABConstants.QuestionNeedle.NEEDLES_CONTACT_INFO):
-                q_instance.question_type = ABConstants.QuestionTypes.CONTACT_INFO
+            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_CONTACT_INFO):
+                q_instance.question_type = ABCs.QuestionTypes.CONTACT_INFO
 
-            elif ABConstants.QuestionNeedle.NAME_MULTI_ATTACH in q_instance.name:
-                q_instance.question_type = ABConstants.QuestionTypes.ADDITONAL_ATTACHMENTS
+            elif ABCs.QuestionNeedle.NAME_MULTI_ATTACH in q_instance.name:
+                q_instance.question_type = ABCs.QuestionTypes.ADDITONAL_ATTACHMENTS
             q_instance.save()
 
         q = create_question_from_model(q_object)
@@ -66,11 +67,11 @@ class ApplicationBuilder:
         :param alt_end_tag:
         :return:
         """
-        intro_tag = Tag.get(Tag.text == ABConstants.TagBlurb.TAG_START)
+        intro_tag = Tag.get(Tag.text == ABCs.TagBlurb.TAG_START)
         if self.user_config.Settings.USE_ALT_END_TAG:
-            tag_end = Tag.get(Tag.text == ABConstants.TagBlurb.TAG_END_ALT)
+            tag_end = Tag.get(Tag.text == ABCs.TagBlurb.TAG_END_ALT)
         else:
-            tag_end = Tag.get(Tag.text == ABConstants.TagBlurb.TAG_END)
+            tag_end = Tag.get(Tag.text == ABCs.TagBlurb.TAG_END)
 
         blurb_intro = Blurb.get(Blurb.id == intro_tag.blurb.id)
         blurb_end = Blurb.get(Blurb.id == tag_end.blurb.id)
@@ -84,9 +85,9 @@ class ApplicationBuilder:
         for b_id in best_blurb_ids:
             blurb = Blurb.get(Blurb.id == b_id)
             if self.user_config.Settings.USE_LONG_TEXT:
-                string_blurb = ABConstants.BULLET_POINT + blurb.long_text + "\n"
+                string_blurb = ABCs.BULLET_POINT + blurb.long_text + "\n"
             else:
-                string_blurb = ABConstants.BULLET_POINT + blurb.short_text + "\n"
+                string_blurb = ABCs.BULLET_POINT + blurb.short_text + "\n"
             message_body += string_blurb
 
         # TODO: Figure out how not to repeat this condition check
@@ -95,7 +96,7 @@ class ApplicationBuilder:
         else:
             final_message = "{0}\n\n{1}\n{2}".format(blurb_intro.short_text, message_body, blurb_end.short_text)
 
-        return final_message.replace(ABConstants.COMPANY_PLACEHOLDER, company)
+        return final_message.replace(ABCs.COMPANY_PLACEHOLDER, company)
 
     def pick_best_blurbs(self, job_description: str) -> typing.List[str]:
         key_words = tokenize_text(job_description)
@@ -112,13 +113,13 @@ class ApplicationBuilder:
     def read_tag_blurbs(self, file_path: str):
         with open(file_path, 'r') as fp:
             content = json.load(fp)
-        blurbs = content[ABConstants.TagBlurb.KEY_BLURBS]
+        blurbs = content[ABCs.TagBlurb.KEY_BLURBS]
         for json_blurb in blurbs:
             blurb = Blurb.create(
-                long_text=json_blurb[ABConstants.TagBlurb.KEY_BLURB_LONG_TEXT],
-                short_text=json_blurb[ABConstants.TagBlurb.KEY_BLURB_SHORT_TEXT]
+                long_text=json_blurb[ABCs.TagBlurb.KEY_BLURB_LONG_TEXT],
+                short_text=json_blurb[ABCs.TagBlurb.KEY_BLURB_SHORT_TEXT]
             )
-            self.add_tags_to_blurb(json_blurb[ABConstants.TagBlurb.KEY_BLURB_TAGS], blurb.id)
+            self.add_tags_to_blurb(json_blurb[ABCs.TagBlurb.KEY_BLURB_TAGS], blurb.id)
 
     @staticmethod
     def get_blurbs():

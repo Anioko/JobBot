@@ -25,10 +25,30 @@ class IndeedConstants(Const):
                                     r"//div[contains(@class, 'input-container')]//select | " \
                                     r"//div[contains(@class, 'input-container')]//textarea"
 
+        PREFILLED_INPUTS = r"//div[contains(@class, 'input-container')]//input[@type='hidden']"
+
         @staticmethod
         def compute_xpath_radio_button(answer, radio_name):
-            unformatted_xpath_radio_button = "//span[text()='{0}']/preceding-sibling::input[@name='{1}']"
-            return unformatted_xpath_radio_button.format(answer, radio_name)
+            """
+            The span right before the input element is it's label
+            :param answer:
+            :param radio_name:
+            :return:
+            """
+            xpath = "//span[text()='{0}']/preceding-sibling::input[@name='{1}']"
+            return xpath.format(answer, radio_name)
+
+        @staticmethod
+        def compute_xpath_input_name_of_label(label_for:str):
+            """
+            The label is above a div with class input and inside this div are the input elements
+            ignoring the hidden input types
+            :param label_for:
+            :return:
+            """
+            xpath = "//label[@for='{0}']/following-sibling::div[contains(@class,'input')]//input[@type!='hidden'] |" \
+                    "//label[@for='{0}']/following-sibling::div[contains(@class,'input')]//textarea"
+            return xpath.format(label_for)
 
     class Id(Const):
         LOGIN_EMAIL = 'signin_email'

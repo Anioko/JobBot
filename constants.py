@@ -22,3 +22,8 @@ class HTMLConstants(Const):
 
     class InputTypes(Const):
         RADIO = 'radio'
+        TEXT = 'text'
+        EMAIL = 'email'
+        FILE = 'file'
+        TEXTAREA = 'textarea'
+        HIDDEN = 'hidden'

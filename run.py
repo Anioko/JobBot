@@ -40,3 +40,4 @@ if __name__ == "__main__":
         #bot.gather(query_parameters)
         bot.apply()
         bot.shut_down()
+

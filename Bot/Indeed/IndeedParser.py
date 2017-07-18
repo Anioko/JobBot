@@ -35,6 +35,12 @@ class QuestionLabelElements(object):
             input_type=first_element.tag_name,
             secondary_input_type=first_element.get_attribute(HTMLConstants.Attributes.TYPE)
         )
+        if self.question.secondary_input_type == HTMLConstants.InputTypes.RADIO:
+            raise NotImplementedError
+
+        if self.question.input_type == HTMLConstants.TagType.SELECT:
+            raise NotImplementedError
+
         return self.question
 
 
@@ -81,17 +87,24 @@ class IndeedParser(object):
         dict_qle: Dict[str, QuestionLabelElements] = OrderedDict()
         for element_input in q_element_inputs:
             element_name = element_input.get_attribute(HTMLConstants.Attributes.NAME)
-            if dict_qle.get(element_name, None) is None:
-                qle = QuestionLabelElements()
-                qle.add_element(element_input)
-                qle.question.name = element_name
-                dict_qle[element_name] = qle
-            else:
-                dict_qle[element_name].add_element(element_input)
 
+            if element_input.get_attribute('type') == HTMLConstants.InputTypes.HIDDEN:
+                pass
+            else:
+                if dict_qle.get(element_name, None) is None:
+                    qle = QuestionLabelElements()
+                    qle.add_element(element_input)
+                    qle.question.name = element_name
+                    dict_qle[element_name] = qle
+                else:
+                    dict_qle[element_name].add_element(element_input)
+
+        # Match Labels to Inputs
         for element_label in q_element_labels:
-            element_name = element_label.get_attribute(HTMLConstants.Attributes.FOR)
-            label_text = element_label.text
+            label_for = element_label.get_attribute(HTMLConstants.Attributes.FOR)
+            xpath_element_name = IndeedConstants.XPath.compute_xpath_input_name_of_label(label_for)
+            element_name = driver.find_element(By.XPATH, xpath_element_name).get_attribute(HTMLConstants.Attributes.NAME)
+            label_text = element_label.get_attribute(HTMLConstants.Attributes.INNER_TEXT)
             if dict_qle.get(element_name, None) is None:
                 print('No input for label ' + label_text)
             else:

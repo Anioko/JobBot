@@ -1,11 +1,13 @@
-
 from typing import List
-
-from indeed import IndeedClient
+import time
 
 from selenium.webdriver.common.by import By
 from selenium import common
 from selenium.webdriver.firefox.webelement import FirefoxWebElement
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+from indeed import IndeedClient
 
 from Bot.Indeed.constants import IndeedConstants
 from Bot.Robot import Robot, RobotConstants
@@ -13,6 +15,7 @@ from constants import HTMLConstants
 from helpers import sleep_after_function
 from models import Job, Question
 from Bot.Indeed.IndeedParser import IndeedParser
+from Bot.Indeed.IndeedAnswer import IndeedAnswer
 
 import peewee
 
@@ -20,6 +23,7 @@ import peewee
 class IndeedRobot(Robot):
     def __init__(self, user_config):
         super().__init__(user_config=user_config, driver=RobotConstants.Driver.CHROME)
+        self.indeed_answer = IndeedAnswer(ab_builder=self.application_builder, user_config=user_config)
 
     def login(self):
         self.driver.get(IndeedConstants.URL_LOGIN)
@@ -77,7 +81,7 @@ class IndeedRobot(Robot):
         print('Added {0} new jobs'.format(count_jobs_added))
 
     def apply_jobs(self):
-        count_applied = 0
+        count_attempts = 0
 
         jobs = Job \
             .select() \
@@ -88,12 +92,12 @@ class IndeedRobot(Robot):
             .order_by(Job.posted_date.desc())
 
         for job in jobs:
-            if count_applied > RobotConstants.MAX_COUNT_APPLICATION_ATTEMPTS:
+            if count_attempts > RobotConstants.MAX_COUNT_APPLICATION_ATTEMPTS:
                 print(RobotConstants.String.MAX_ATTEMPTS_REACHED)
                 break
 
-            if self._apply_to_single_job(job):
-                count_applied += 1
+            self._apply_to_single_job(job)
+            count_attempts += 1
 
     @sleep_after_function(RobotConstants.WAIT_MEDIUM)
     def _apply_to_single_job(self, job: Job) -> bool:
@@ -110,11 +114,13 @@ class IndeedRobot(Robot):
             try:
                 self.driver.get(job.link)
                 # Fill job information
-                job.description = self.driver.find_element(By.ID, IndeedConstants.Id.JOB_SUMMARY)
+                job.description = self.driver.find_element(By.ID, IndeedConstants.Id.JOB_SUMMARY).text
 
                 self.driver.find_element(By.XPATH, IndeedConstants.XPath.APPLY_SPAN).click()
 
                 # Switch to application form IFRAME, notice that it is a nested IFRAME
+                # TODO: Not very elegant to make it sleep, but I don't have name of iframe so explicit wait is difficult to use
+                time.sleep(RobotConstants.WAIT_MEDIUM)
                 self.driver.switch_to.frame(1)
                 self.driver.switch_to.frame(0)
 
@@ -138,6 +144,11 @@ class IndeedRobot(Robot):
         dict_qle = IndeedParser.get_dict_qle(self.driver)
         for key, qle in dict_qle.items():
             self.application_builder.add_question_to_database(qle.question)
+
+        if self.indeed_answer.answer_all_questions(self.driver, job, dict_qle):
+            self.successful_application(job, dry_run=self.user_config.Settings.IS_DRY_RUN)
+        else:
+            self.failed_application(job)
 
 if __name__ == "__main__":
     pass
