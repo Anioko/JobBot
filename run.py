@@ -16,7 +16,7 @@ if __name__ == "__main__":
     unformatted_display_query = "Bot being initialized with this query:\n\n {0}"
 
     args = parser.parse_args()
-    if args.option == JobBot.IndeedBot:
+    if args.option == JobBot.IndeedBot.value:
         q1 = '((intern OR co-op) AND ' \
              '(software OR develop OR engineer OR mechanical OR mechatronics ' \
              'OR programming OR android OR ios OR technical OR qa OR testing OR automation)) ' \
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         bot.apply_jobs()
         bot.shut_down()
 
-    elif args.option == JobBot.AngelBot:
+    elif args.option == JobBot.AngelBot.value:
         query_parameters = {"types": "internship",
                             "roles": [
                                 "Software Engineer"
