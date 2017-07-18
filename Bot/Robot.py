@@ -24,6 +24,7 @@ class RobotConstants(Const):
         UNABLE_TO_ANSWER = 'Unable to answer all questions'
         NOT_ENOUGH_KEYWORD_MATCHES = 'Not enough keyword matches in the description'
         QUESTION_LABELS_AND_INPUTS_MISMATCH = 'The number of labels and question input elements do not match'
+        UNPAID = 'Unpaid internship'
         MAX_ATTEMPTS_REACHED = 'The maximum number of job application attempts has been reached'
 
 

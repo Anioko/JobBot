@@ -82,11 +82,21 @@ class AngelBot(Robot):
 
     def _apply_single_job(self, job: Job):
         self.driver.get(job.link)
-        self.attempt_application(job)
-        self._get_job_information(job)
-        if self._fill_application(job):
-            self.successful_application(job, dry_run=self.user_config.Settings.IS_DRY_RUN)
-        else:
+        try:
+            self._get_job_information(job)
+
+            self.attempt_application(job)
+
+            if 'unpaid' in job.description:
+                job.error = RobotConstants.String.UNPAID
+                self.failed_application(job)
+
+            elif self._fill_application(job):
+                self.successful_application(job, dry_run=self.user_config.Settings.IS_DRY_RUN)
+            else:
+                self.failed_application(job)
+        except Exception as e:
+            job.error = str(e)
             self.failed_application(job)
 
         job.save()
@@ -128,7 +138,7 @@ class AngelBot(Robot):
                 return False
 
             except common.exceptions.WebDriverException as e:
-                if len(user_note) > AngelConstants.Constraints.MAX_LENGTH_USER_NOTE:
+                if len(user_note) > AngelConstants.Constraint.MAX_LENGTH_USER_NOTE:
                     job.error = AngelConstants.Error.USER_NOTE_TOO_LONG
                     return False
         else:
