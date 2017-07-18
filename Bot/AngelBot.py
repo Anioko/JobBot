@@ -37,7 +37,7 @@ class AngelBot(Robot):
 
         assert self._is_authenticated()
 
-        string_parameters = AngelBot.encode_parameters(query_parameters)
+        string_parameters = AngelBot.encode_parameters(dict_parameters=query_parameters)
         self.driver.get(AngelConstants.URL.JOBS + string_parameters)
 
         # Check if any jobs have loaded
@@ -126,24 +126,25 @@ class AngelBot(Robot):
                         for element in unselected_elements:
                             element.click()
                         self.driver.find_element(By.XPATH, AngelConstants.XPath.DONE).click()
+
                     except Exception as e:
                         print(str(e))
                         job.error = str(e)
-                        return False
 
                 return True
 
             except common.exceptions.NoSuchElementException as e:
                 job.error = str(e)
-                return False
 
             except common.exceptions.WebDriverException as e:
                 if len(user_note) > AngelConstants.Constraint.MAX_LENGTH_USER_NOTE:
                     job.error = AngelConstants.Error.USER_NOTE_TOO_LONG
-                    return False
+                else:
+                    job.error = str(e)
         else:
             job.error = RobotConstants.String.NOT_ENOUGH_KEYWORD_MATCHES
-            return False
+
+        return False
 
     def _get_job_information(self, job: Job):
         element_job_description = self.driver.find_element(By.XPATH, AngelConstants.XPath.JOB_DESCRIPTION)
@@ -158,7 +159,8 @@ class AngelBot(Robot):
         except common.exceptions.NoSuchElementException as e:
             return False
 
-    def encode_parameters(self, dict_parameters: dict) -> str:
+    @staticmethod
+    def encode_parameters(dict_parameters: dict) -> str:
         """
         Function to encode the query parameters how Angel.co likes them
         :param dict_parameters:
