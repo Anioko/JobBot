@@ -87,7 +87,7 @@ class IndeedRobot(Robot):
             .select() \
             .where(
             (Job.website == IndeedConstants.WEBSITE_NAME) &
-            (Job.applied == False) &
+            (Job.attempted == False) &
             (Job.good_fit == True)) \
             .order_by(Job.posted_date.desc())
 
@@ -108,7 +108,6 @@ class IndeedRobot(Robot):
         :param job:
         :return:
         """
-        # TODO: Add assert to ensure you are on job page
         self.attempt_application(job)
         if job.easy_apply:
             try:
@@ -119,20 +118,15 @@ class IndeedRobot(Robot):
                 self.driver.find_element(By.XPATH, IndeedConstants.XPath.APPLY_SPAN).click()
 
                 # Switch to application form IFRAME, notice that it is a nested IFRAME
-                # TODO: I don't have name of iframe so explicit wait is difficult to use
                 time.sleep(RobotConstants.WAIT_MEDIUM)
                 self.driver.switch_to.frame(1)
                 self.driver.switch_to.frame(0)
 
                 self.fill_application(job)
 
-            except common.exceptions.NoSuchFrameException as e:
-                job.error = str(e)
-                print(e)
-
-            # This second exception shouldn't really happen if the job is easy apply as described...
             except common.exceptions.NoSuchElementException as e:
                 job.error = str(e)
+                job.expired = True
                 print(e)
         else:
             pass

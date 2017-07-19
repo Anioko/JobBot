@@ -22,8 +22,9 @@ if __name__ == "__main__":
              'OR programming OR android OR ios OR technical OR qa OR testing OR automation)) ' \
              '-"marketing" -"human resources" -"hr" -unpaid -volunteer -"labor" -"labour" -secretary ' \
              '-receptionist -"assistant" -clerk -instructor -coordinator -tutor -cook -operator -manager -accountant ' \
-             '-senior -director -film -"social worker" -teacher -designer -psychologist -"architect" ' \
-             '-optician -optician'
+             '-senior -director -"film" -"social worker" -teacher -designer -psychologist -"architect" ' \
+             '-optician -optician -"RN" -"accounting" -"mechanic" -"Producer" -"Counsellor" -"Representative" ' \
+             '-"Accounts Payable" -"plumber"'
 
         params = {
             'q': q1,

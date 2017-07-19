@@ -36,9 +36,12 @@ class IndeedAnswer(object):
         state = self.AnswerState.CONTINUE
         list_continues: List[FirefoxWebElement] = driver.find_elements(By.XPATH, IndeedConstants.XPath.BUTTON_CONT)
 
-        while state != self.AnswerState.CANNOT_ANSWER:
+        while True:
             qle = dict_qle[name]
             state = self._answer_question(driver, job, qle)
+            if state == self.AnswerState.CANNOT_ANSWER:
+                job.error = RobotConstants.String.UNABLE_TO_ANSWER
+                return False
 
             if state == self.AnswerState.NOT_VISIBLE:
                 for element_continue in list_continues:
@@ -47,7 +50,7 @@ class IndeedAnswer(object):
                         break
                     except common.exceptions.ElementNotVisibleException as e:
                         pass
-                    except Exception as e:
+                    except common.exceptions.NoSuchElementException as e:
                         job.error = str(e)
                         return False
 
@@ -56,9 +59,12 @@ class IndeedAnswer(object):
                     try:
                         driver.find_element(By.XPATH, IndeedConstants.XPath.BUTTON_APPLY).click()
                         return True
-                    except Exception as e:
+                    except common.exceptions.NoSuchElementException as e:
                         job.error = str(e)
                         return False
+                    except common.exceptions.ElementNotVisibleException as e:
+                        # TODO: Figure out why this happens
+                        driver.find_element(By.XPATH, IndeedConstants.XPath.BUTTON_CONT).click()
 
                 i += 1
                 name = names[i]
@@ -123,50 +129,51 @@ class IndeedAnswer(object):
 
         except common.exceptions.NoSuchElementException as e:
             job.error = str(e)
+
+        except common.exceptions.InvalidElementStateException as e:
+            return self.AnswerState.NOT_VISIBLE
+
         return self.AnswerState.CANNOT_ANSWER
 
     def _answer_radio_or_checkbox(self, driver: webdriver.Chrome, job: Job, qle: QuestionLabelElements,
                                   is_checkbox: bool) -> Enum:
-        if does_element_exist(driver, By.XPATH, IndeedConstants.XPath.PREFILLED_INPUTS):
-            return self.AnswerState.CONTINUE
-        else:
-            if is_checkbox:
-                if qle.question.answer is not None:
-                    answers = qle.question.answer.split(',')
-                    values = [answer.strip() for answer in answers]
-                    checkbox_name = qle.element_list[0].get_attribute(HTMLConstants.Attributes.NAME)
-                    for value in values:
-                        try:
-                            xpath_checkbox_button = IndeedConstants.XPath.compute_xpath_radio_checkbox_button(
-                                checkbox_name, value
-                            )
-                            driver.find_element(By.XPATH, xpath_checkbox_button).click()
-
-                        except common.exceptions.ElementNotVisibleException as e:
-                            return self.AnswerState.NOT_VISIBLE
-
-                        except common.exceptions.NoSuchElementException as e:
-                            job.error = str(e)
-                            return self.AnswerState.CANNOT_ANSWER
-
-                    return self.AnswerState.CONTINUE
-
-            else:
-                question_answer = qle.question.answer
-                radio_name = qle.element_list[0].get_attribute(HTMLConstants.Attributes.NAME)
-                if question_answer is not None:
+        if is_checkbox:
+            if qle.question.answer is not None:
+                answers = qle.question.answer.split(',')
+                values = [answer.strip() for answer in answers]
+                checkbox_name = qle.element_list[0].get_attribute(HTMLConstants.Attributes.NAME)
+                for value in values:
                     try:
-                        xpath_radio_button = IndeedConstants.XPath.compute_xpath_radio_checkbox_button(
-                            radio_name, question_answer
+                        xpath_checkbox_button = IndeedConstants.XPath.compute_xpath_radio_checkbox_button(
+                            checkbox_name, value
                         )
-                        driver.find_element(By.XPATH, xpath_radio_button).click()
-                        return self.AnswerState.CONTINUE
+                        driver.find_element(By.XPATH, xpath_checkbox_button).click()
 
                     except common.exceptions.ElementNotVisibleException as e:
                         return self.AnswerState.NOT_VISIBLE
 
                     except common.exceptions.NoSuchElementException as e:
                         job.error = str(e)
+                        return self.AnswerState.CANNOT_ANSWER
+
+                return self.AnswerState.CONTINUE
+
+        else:
+            question_answer = qle.question.answer
+            radio_name = qle.element_list[0].get_attribute(HTMLConstants.Attributes.NAME)
+            if question_answer is not None:
+                try:
+                    xpath_radio_button = IndeedConstants.XPath.compute_xpath_radio_checkbox_button(
+                        radio_name, question_answer
+                    )
+                    driver.find_element(By.XPATH, xpath_radio_button).click()
+                    return self.AnswerState.CONTINUE
+
+                except common.exceptions.ElementNotVisibleException as e:
+                    return self.AnswerState.NOT_VISIBLE
+
+                except common.exceptions.NoSuchElementException as e:
+                    job.error = str(e)
 
         return self.AnswerState.CANNOT_ANSWER
 
