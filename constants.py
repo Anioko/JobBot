@@ -30,3 +30,4 @@ class HTMLConstants(Const):
         TEXT_AREA = 'textarea'
         HIDDEN = 'hidden'
         CHECK_BOX = 'checkbox'
+        SELECT_ONE = 'select-one'

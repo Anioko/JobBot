@@ -17,7 +17,7 @@ class IndeedConstants(Const):
         APPLY_SPAN = r"//span[contains(@class, 'indeed-apply-button-label')]"
         DIFFERENT_RESUME = r"//a[contains(text(),'Apply with a different resume?')]"
 
-        BUTTON_CONT = r"//div[contains(@id,'continue-div')]//div//a"
+        BUTTON_CONT = r"//a[@href='#next']"
         BUTTON_APPLY = r"//div[contains(@id,'apply-div')]//div//input"
 
         ALL_QUESTION_LABELS = r"//div[contains(@class, 'input-container')]//label"
@@ -29,9 +29,8 @@ class IndeedConstants(Const):
 
         # Not really constants anymore, perhaps renaming is necessary...
         @staticmethod
-        def compute_xpath_radio_button(radio_name:str, value:str) -> str:
+        def compute_xpath_radio_checkbox_button(radio_name:str, value:str) -> str:
             """
-
             :param radio_name:
             :param value:
             :return:
