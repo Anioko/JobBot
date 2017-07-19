@@ -4,6 +4,7 @@ from enum import Enum
 from selenium.webdriver.common.by import By
 from selenium import common
 from selenium.webdriver.firefox.webelement import FirefoxWebElement
+from selenium.webdriver.support.ui import Select
 from selenium import webdriver
 
 from models import Job, Question
@@ -170,7 +171,23 @@ class IndeedAnswer(object):
         return self.AnswerState.CANNOT_ANSWER
 
     def _answer_select(self, driver: webdriver.Chrome, job: Job, qle: QuestionLabelElements) -> Enum:
-        raise NotImplementedError
+        select_name = qle.element_list[0].get_attribute(HTMLConstants.Attributes.NAME)
+        try:
+            select = Select(driver.find_element(By.NAME, select_name))
+            if qle.question.secondary_input_type == HTMLConstants.InputTypes.SELECT_ONE:
+                select.select_by_value(qle.question.answer)
+            else:
+                raise NotImplementedError
+            return self.AnswerState.CONTINUE
+
+        except common.exceptions.ElementNotVisibleException as e:
+            return self.AnswerState.NOT_VISIBLE
+
+        except common.exceptions.NoSuchElementException as e:
+            job.error = str(e)
+
+        return self.AnswerState.CANNOT_ANSWER
+
 
 #TODO: This pattern is very common, perhaps reduce with method that takes function and parameters as argument
 '''
