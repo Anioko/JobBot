@@ -34,6 +34,7 @@ class ApplicationBuilderConstants(Const):
         NEEDLES_CONTACT_INFO = ['name', 'email', 'phone', 'number']
 
         NAME_MULTI_ATTACH = 'attachments'
+        LENGTH_THRESHOLD_TOKENS = 20
 
     # TODO: Use custom field in peewee
     class QuestionTypes(Const):
@@ -46,4 +47,5 @@ class ApplicationBuilderConstants(Const):
         LANGUAGE = 'language'
         EDUCATION = 'education'
         ADDITONAL_ATTACHMENTS = 'attachments'
+        LONG = 'long'
 

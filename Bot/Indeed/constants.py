@@ -27,28 +27,45 @@ class IndeedConstants(Const):
 
         PREFILLED_INPUTS = r"//div[contains(@class, 'input-container')]//input[@type='hidden']"
 
+        # Not really constants anymore, perhaps renaming is necessary...
         @staticmethod
-        def compute_xpath_radio_button(answer, radio_name):
+        def compute_xpath_radio_button(radio_name:str, value:str) -> str:
             """
-            The span right before the input element is it's label
-            :param answer:
+
             :param radio_name:
+            :param value:
             :return:
             """
-            xpath = "//span[text()='{0}']/preceding-sibling::input[@name='{1}']"
-            return xpath.format(answer, radio_name)
+            xpath = "//input[@name='{0}' and @value='{1}']"
+            return xpath.format(radio_name, value)
 
         @staticmethod
-        def compute_xpath_input_name_of_label(label_for:str):
+        def compute_xpath_input_name_of_label(label_for:str) -> str:
             """
             The label is above a div with class input and inside this div are the input elements
             ignoring the hidden input types
             :param label_for:
             :return:
             """
-            xpath = "//label[@for='{0}']/following-sibling::div[contains(@class,'input')]//input[@type!='hidden'] |" \
-                    "//label[@for='{0}']/following-sibling::div[contains(@class,'input')]//textarea"
+            xpath = "//label[@for='{0}']/following-sibling::div[contains(@class,'input')]//input[@type!='hidden'] | " \
+                    "//label[@for='{0}']/following-sibling::div[contains(@class,'input')]//textarea | " \
+                    "//label[@for='{0}']/following-sibling::div[contains(@class,'input')]//select"
             return xpath.format(label_for)
+
+        @staticmethod
+        def compute_xpath_radio_span(radio_name:str) -> str:
+            """
+            xpath to find the span right beside the radio option input, basically the choice that the radio button represents
+            :param radio_name:
+            :return:
+            """
+            xpath = "//input[@name='{0}']/following-sibling::span"
+            return xpath.format(radio_name)
+
+        @staticmethod
+        def compute_xpath_select_options(select_name: str) -> str:
+            xpath = "//select[@name='{0}']//option"
+            return xpath.format(select_name)
 
     class Id(Const):
         LOGIN_EMAIL = 'signin_email'
@@ -59,3 +76,6 @@ class IndeedConstants(Const):
         INPUT_APPLICANT_PHONE = 'applicant.phoneNumber'
         BUTTON_RESUME = 'resume'
         INPUT_COVER_LETTER = 'applicant.applicationMessage'
+
+    class Class(Const):
+        HELP_BLOCK = 'help-block'

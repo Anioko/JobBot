@@ -24,7 +24,10 @@ class ApplicationBuilder:
     def add_question_to_database(q_object: Question):
         def _categorize_question(q_instance: Question):
             split_tokens = q_instance.tokens.split(',')
-            if any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_RESUME):
+            if len(split_tokens) > ABCs.QuestionNeedle.LENGTH_THRESHOLD_TOKENS:
+                q_instance.question_type = ABCs.QuestionTypes.LONG
+
+            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_RESUME):
                 q_instance.question_type = ABCs.QuestionTypes.RESUME
 
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_MESSAGE):

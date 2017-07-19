@@ -39,8 +39,7 @@ class IndeedAnswer(object):
             state = self._answer_question(driver, job, qle)
 
             if state == self.AnswerState.CANNOT_INTERACT:
-                # TODO: Press continue
-                raise NotImplementedError
+                driver.find_element(By.XPATH, IndeedConstants.XPath.BUTTON_CONT).click()
 
             else:
                 if i == len(names) - 1:
@@ -69,7 +68,10 @@ class IndeedAnswer(object):
                 job.error = RobotConstants.String.NOT_ENOUGH_KEYWORD_MATCHES
 
         elif q.secondary_input_type == HTMLConstants.InputTypes.RADIO:
-            return self.answer_radio(driver, job, qle)
+            return self._answer_radio_or_checkbox(driver, job, qle, is_checkbox=False)
+
+        elif q.secondary_input_type == HTMLConstants.InputTypes.CHECK_BOX:
+            return self._answer_radio_or_checkbox(driver, job, qle, is_checkbox=True)
 
         elif q.input_type == HTMLConstants.TagType.SELECT:
             raise NotImplementedError
@@ -88,18 +90,34 @@ class IndeedAnswer(object):
 
         return self.AnswerState.CANNOT_ANSWER
 
-    def answer_radio(self, driver: webdriver.Chrome, job:Job, qle:QuestionLabelElements):
+    def _answer_message(self, driver: webdriver.Chrome, job:Job, qle:QuestionLabelElements):
+        raise NotImplementedError
+
+    def _answer_text(self, driver: webdriver.Chrome, job:Job, qle:QuestionLabelElements):
+        raise NotImplementedError
+
+    def _answer_radio_or_checkbox(self, driver: webdriver.Chrome, job:Job, qle:QuestionLabelElements, is_checkbox: bool):
         if does_element_exist(driver, By.XPATH, IndeedConstants.XPath.PREFILLED_INPUTS):
             return self.AnswerState.CONTINUE
         else:
-            question_answer = qle.question.answer
-            input_radio_name = qle.element_list[0].get_attribute(HTMLConstants.Attributes.NAME)
-            if question_answer is not None:
-                try:
-                    xpath_radio = IndeedConstants.XPath.compute_xpath_radio_button(question_answer, input_radio_name)
-                    driver.find_element(By.XPATH, xpath_radio).click()
-                    return self.AnswerState.CONTINUE
+            if is_checkbox:
+                raise NotImplementedError
+            else:
+                question_answer = qle.question.answer
+                radio_name = qle.element_list[0].get_attribute(HTMLConstants.Attributes.NAME)
+                if question_answer is not None:
+                    try:
+                        xpath_radio_button = IndeedConstants.XPath.compute_xpath_radio_button(radio_name, question_answer)
+                        driver.find_element(By.XPATH, xpath_radio_button).click()
+                        return self.AnswerState.CONTINUE
 
-                except common.exceptions.NoSuchElementException as e:
-                    job.error = str(e)
-                    return self.AnswerState.CANNOT_ANSWER
+                    except common.exceptions.ElementNotInteractableException as e:
+                        return self.AnswerState.CANNOT_INTERACT
+
+                    except common.exceptions.NoSuchElementException as e:
+                        job.error = str(e)
+
+        return self.AnswerState.CANNOT_ANSWER
+
+    def _answer_select(self, driver: webdriver.Chrome, job:Job, qle:QuestionLabelElements):
+        raise NotImplementedError

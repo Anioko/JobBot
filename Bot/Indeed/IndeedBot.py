@@ -100,7 +100,7 @@ class IndeedRobot(Robot):
             count_attempts += 1
 
     @sleep_after_function(RobotConstants.WAIT_MEDIUM)
-    def _apply_to_single_job(self, job: Job) -> bool:
+    def _apply_to_single_job(self, job: Job):
         """
         Assuming you are on a job page, presses the apply button and switches to the application
         IFrame. If everything is working properly it call fill_application.
@@ -119,7 +119,7 @@ class IndeedRobot(Robot):
                 self.driver.find_element(By.XPATH, IndeedConstants.XPath.APPLY_SPAN).click()
 
                 # Switch to application form IFRAME, notice that it is a nested IFRAME
-                # TODO: Not very elegant to make it sleep, but I don't have name of iframe so explicit wait is difficult to use
+                # TODO: I don't have name of iframe so explicit wait is difficult to use
                 time.sleep(RobotConstants.WAIT_MEDIUM)
                 self.driver.switch_to.frame(1)
                 self.driver.switch_to.frame(0)
