@@ -1,4 +1,4 @@
-from helpers import Const
+from Shared.helpers import Const
 
 
 class IndeedConstants(Const):
@@ -14,6 +14,7 @@ class IndeedConstants(Const):
 
     # APPLICATION STAGE
     class XPath(Const):
+        TOS_POPUP = r"//button[text()='I agree']"
         APPLY_SPAN = r"//span[contains(@class, 'indeed-apply-button-label')]"
         DIFFERENT_RESUME = r"//a[contains(text(),'Apply with a different resume?')]"
 
@@ -29,14 +30,14 @@ class IndeedConstants(Const):
 
         # Not really constants anymore, perhaps renaming is necessary...
         @staticmethod
-        def compute_xpath_radio_checkbox_button(radio_name:str, value:str) -> str:
+        def compute_xpath_check_button(radio_name:str, answer:str) -> str:
             """
             :param radio_name:
             :param value:
             :return:
             """
-            xpath = "//input[@name='{0}' and @value='{1}']"
-            return xpath.format(radio_name, value)
+            xpath = r"//div[@class='input']//span[text()='{1}']/preceding-sibling::input[1][@name='{0}']"
+            return xpath.format(radio_name, answer)
 
         @staticmethod
         def compute_xpath_input_name_of_label(label_for:str) -> str:

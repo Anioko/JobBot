@@ -1,5 +1,4 @@
-from helpers import Const
-import re
+from Shared.helpers import Const
 
 
 class ApplicationBuilderConstants(Const):

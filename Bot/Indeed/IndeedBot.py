@@ -1,23 +1,17 @@
-from typing import List
 import time
 
-from selenium.webdriver.common.by import By
-from selenium import common
-from selenium.webdriver.firefox.webelement import FirefoxWebElement
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
+import peewee
 from indeed import IndeedClient
+from selenium import common
+from selenium.webdriver.common.by import By
 
+from Bot.Indeed.IndeedAnswer import IndeedAnswer
+from Bot.Indeed.IndeedParser import IndeedParser
 from Bot.Indeed.constants import IndeedConstants
 from Bot.Robot import Robot, RobotConstants
-from constants import HTMLConstants
-from helpers import sleep_after_function
-from models import Job, Question
-from Bot.Indeed.IndeedParser import IndeedParser
-from Bot.Indeed.IndeedAnswer import IndeedAnswer
-
-import peewee
+from Shared.helpers import sleep_after_function
+from Shared.selenium_helpers import does_element_exist
+from Shared.models import Job
 
 
 class IndeedRobot(Robot):
@@ -87,7 +81,7 @@ class IndeedRobot(Robot):
             .select() \
             .where(
             (Job.website == IndeedConstants.WEBSITE_NAME) &
-            (Job.attempted == False) &
+            (Job.applied == False) &
             (Job.good_fit == True)) \
             .order_by(Job.posted_date.desc())
 
@@ -110,8 +104,12 @@ class IndeedRobot(Robot):
         """
         self.attempt_application(job)
         if job.easy_apply:
+            self.driver.get(job.link)
+
+            if does_element_exist(self.driver, By.XPATH, IndeedConstants.XPath.TOS_POPUP):
+                self.driver.find_element(By.XPATH, IndeedConstants.XPath.TOS_POPUP).click()
+
             try:
-                self.driver.get(job.link)
                 # Fill job information
                 job.description = self.driver.find_element(By.ID, IndeedConstants.Id.JOB_SUMMARY).text
 
@@ -128,6 +126,7 @@ class IndeedRobot(Robot):
                 job.error = str(e)
                 job.expired = True
                 print(e)
+
         else:
             pass
 

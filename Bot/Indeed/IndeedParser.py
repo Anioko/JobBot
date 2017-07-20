@@ -1,24 +1,23 @@
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict
 from datetime import datetime
 from typing import Optional, List, Dict
 
-import nltk
-
 from selenium import webdriver
-from selenium.webdriver.firefox.webelement import FirefoxWebElement
-from selenium import common
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.webelement import FirefoxWebElement
+from selenium.webdriver.support.ui import Select
 
-from constants import HTMLConstants
 from Bot.Indeed.constants import IndeedConstants
-from models import Job, Question, ModelConstants
-from helpers import tokenize_text
+from Shared.constants import HTMLConstants
+from Shared.helpers import tokenize_text
+from Shared.models import Job, Question, ModelConstants
 
 
 class QuestionLabelElements(object):
     def __init__(self):
         self.question = Question()
         self.label = ''
+        self.name = ''
         self.element_list = []
 
     def add_element(self, element):
@@ -26,9 +25,9 @@ class QuestionLabelElements(object):
 
     def compute_question(self, driver: webdriver.Chrome) -> Question:
         first_element:FirefoxWebElement = self.element_list[0]
+        self.name = first_element.get_attribute(HTMLConstants.Attributes.NAME)
 
         self.question = Question(
-            name=first_element.get_attribute(HTMLConstants.Attributes.NAME),
             label=self.label,
             tokens=ModelConstants.DELIMITER.join(tokenize_text(self.label)),
             website=IndeedConstants.WEBSITE_NAME,
@@ -45,27 +44,22 @@ class QuestionLabelElements(object):
                 (self.question.secondary_input_type == HTMLConstants.InputTypes.RADIO):
             list_spans: List[FirefoxWebElement] = driver.find_elements(
                 By.XPATH,
-                IndeedConstants.XPath.compute_xpath_radio_span(self.question.name)
+                IndeedConstants.XPath.compute_xpath_radio_span(self.name)
             )
             list_spans = [span for span in list_spans if span.get_attribute(HTMLConstants.Attributes.CLASS) != IndeedConstants.Class.HELP_BLOCK]
             assert len(list_spans) == len(self.element_list)
 
             for i, span in enumerate(list_spans):
-                element = self.element_list[i]
-                string_additional_info += '{0} : {1}\n'.format(
-                    span.get_attribute(HTMLConstants.Attributes.INNER_TEXT),
-                    element.get_attribute(HTMLConstants.Attributes.VALUE)
+                string_additional_info += '{0} \n'.format(
+                    span.get_attribute(HTMLConstants.Attributes.INNER_TEXT)
                 )
 
         elif self.question.input_type == HTMLConstants.TagType.SELECT:
-            list_options: List[FirefoxWebElement] = driver.find_elements(
-                By.XPATH,
-                IndeedConstants.XPath.compute_xpath_select_options(self.question.name)
-            )
+            select = Select(driver.find_element(By.NAME, self.name))
+            list_options: List[FirefoxWebElement] = select.options
             for option in list_options:
-                string_additional_info += '{0} : {1}\n'.format(
-                    option.get_attribute(HTMLConstants.Attributes.INNER_TEXT),
-                    option.get_attribute(HTMLConstants.Attributes.VALUE)
+                string_additional_info += '{0} \n'.format(
+                    option.get_attribute(HTMLConstants.Attributes.INNER_TEXT)
                 )
 
         self.question.additional_info = string_additional_info

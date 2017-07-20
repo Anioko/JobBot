@@ -1,4 +1,4 @@
-from helpers import Const
+from Shared.helpers import Const
 
 
 class HTMLConstants(Const):
@@ -11,6 +11,7 @@ class HTMLConstants(Const):
         SELECT = 'select'
         H2 = 'h2'
         ANCHOR = 'a'
+        PARAGRAPH = 'p'
 
     class Attributes(Const):
         HREF = 'href'
@@ -31,3 +32,5 @@ class HTMLConstants(Const):
         HIDDEN = 'hidden'
         CHECK_BOX = 'checkbox'
         SELECT_ONE = 'select-one'
+        FILE = 'file'
+

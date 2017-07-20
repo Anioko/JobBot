@@ -1,21 +1,20 @@
-from typing import Dict, List
 from enum import Enum
+from typing import Dict, List
 
-from selenium.webdriver.common.by import By
 from selenium import common
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webelement import FirefoxWebElement
 from selenium.webdriver.support.ui import Select
-from selenium import webdriver
 
-from models import Job, Question
-from constants import HTMLConstants
-from Bot.Robot import RobotConstants
-from Bot.Indeed.constants import IndeedConstants
-from Bot.Indeed.IndeedParser import QuestionLabelElements
-from Application.constants import ApplicationBuilderConstants as ABCs
 from Application.ApplicationBuilder import ApplicationBuilder
+from Application.constants import ApplicationBuilderConstants as ABCs
+from Bot.Indeed.IndeedParser import QuestionLabelElements
+from Bot.Indeed.constants import IndeedConstants
+from Bot.Robot import RobotConstants
+from Shared.constants import HTMLConstants
+from Shared.models import Job, Question
 from userconfig import UserConfig
-from helpers import does_element_exist
 
 
 class IndeedAnswer(object):
@@ -65,36 +64,32 @@ class IndeedAnswer(object):
                     except common.exceptions.ElementNotVisibleException as e:
                         # TODO: Figure out why this happens
                         driver.find_element(By.XPATH, IndeedConstants.XPath.BUTTON_CONT).click()
+                        i -= 1
 
                 i += 1
                 name = names[i]
 
-        return False
-
     def _answer_question(self, driver: webdriver.Chrome, job: Job, qle: QuestionLabelElements):
         # Question should already be in database at this point with updated answer hopefully
-        qle.question = Question.get(Question.name == qle.question.name)
+        qle.question = Question.get(Question.label == qle.question.label, Question.input_type == qle.question.input_type)
+        if qle.question is not None:
+            if qle.question.question_type == ABCs.QuestionTypes.MESSAGE:
+                return self._answer_message(driver, job, qle)
 
-        if qle.question.question_type == ABCs.QuestionTypes.MESSAGE:
-            return self._answer_message(driver, job, qle)
+            elif qle.question.secondary_input_type == HTMLConstants.InputTypes.RADIO or \
+                qle.question.secondary_input_type == HTMLConstants.InputTypes.CHECK_BOX:
+                return self._answer_check_button(driver, job, qle)
 
-        elif qle.question.secondary_input_type == HTMLConstants.InputTypes.RADIO:
-            return self._answer_radio_or_checkbox(driver, job, qle, is_checkbox=False)
+            elif qle.question.input_type == HTMLConstants.TagType.SELECT:
+                return self._answer_select(driver, job, qle)
 
-        elif qle.question.secondary_input_type == HTMLConstants.InputTypes.CHECK_BOX:
-            return self._answer_radio_or_checkbox(driver, job, qle, is_checkbox=True)
+            elif qle.question.question_type == ABCs.QuestionTypes.ADDITONAL_ATTACHMENTS:
+                return self.AnswerState.CONTINUE
 
-        elif qle.question.input_type == HTMLConstants.TagType.SELECT:
-            return self._answer_select(driver, job, qle)
-
-        else:
-            if qle.question.answer is None:
-                if qle.question.question_type == ABCs.QuestionTypes.ADDITONAL_ATTACHMENTS:
-                    return self.AnswerState.CONTINUE
-                else:
-                    job.error = RobotConstants.String.UNABLE_TO_ANSWER
             else:
                 return self._answer_text(driver, job, qle)
+        else:
+            job.error = RobotConstants.String.UNABLE_TO_ANSWER
 
         return self.AnswerState.CANNOT_ANSWER
 
@@ -102,7 +97,7 @@ class IndeedAnswer(object):
         message = self.ab_builder.generate_message(job.description, job.company)
         if message is not None:
             try:
-                driver.find_element(By.NAME, qle.question.name).send_keys(message)
+                driver.find_element(By.NAME, qle.name).send_keys(message)
                 job.message = message
                 return self.AnswerState.CONTINUE
 
@@ -119,7 +114,7 @@ class IndeedAnswer(object):
 
     def _answer_text(self, driver: webdriver.Chrome, job: Job, qle: QuestionLabelElements) -> Enum:
         try:
-            element = driver.find_element(By.NAME, qle.question.name)
+            element = driver.find_element(By.NAME, qle.name)
             element.clear()
             element.send_keys(qle.question.answer)
             return self.AnswerState.CONTINUE
@@ -135,47 +130,26 @@ class IndeedAnswer(object):
 
         return self.AnswerState.CANNOT_ANSWER
 
-    def _answer_radio_or_checkbox(self, driver: webdriver.Chrome, job: Job, qle: QuestionLabelElements,
-                                  is_checkbox: bool) -> Enum:
-        if is_checkbox:
-            if qle.question.answer is not None:
-                answers = qle.question.answer.split(',')
-                values = [answer.strip() for answer in answers]
-                checkbox_name = qle.element_list[0].get_attribute(HTMLConstants.Attributes.NAME)
-                for value in values:
-                    try:
-                        xpath_checkbox_button = IndeedConstants.XPath.compute_xpath_radio_checkbox_button(
-                            checkbox_name, value
-                        )
-                        driver.find_element(By.XPATH, xpath_checkbox_button).click()
-
-                    except common.exceptions.ElementNotVisibleException as e:
-                        return self.AnswerState.NOT_VISIBLE
-
-                    except common.exceptions.NoSuchElementException as e:
-                        job.error = str(e)
-                        return self.AnswerState.CANNOT_ANSWER
-
-                return self.AnswerState.CONTINUE
-
-        else:
-            question_answer = qle.question.answer
-            radio_name = qle.element_list[0].get_attribute(HTMLConstants.Attributes.NAME)
-            if question_answer is not None:
+    def _answer_check_button(self, driver: webdriver.Chrome, job: Job, qle: QuestionLabelElements) -> Enum:
+        if qle.question.answer is not None:
+            span_answers = qle.question.answer.split(',')
+            span_answers = [answer.strip() for answer in span_answers]
+            element_name = qle.element_list[0].get_attribute(HTMLConstants.Attributes.NAME)
+            for span_answer in span_answers:
                 try:
-                    xpath_radio_button = IndeedConstants.XPath.compute_xpath_radio_checkbox_button(
-                        radio_name, question_answer
+                    xpath_checkbox_button = IndeedConstants.XPath.compute_xpath_check_button(
+                        element_name, span_answer
                     )
-                    driver.find_element(By.XPATH, xpath_radio_button).click()
-                    return self.AnswerState.CONTINUE
+                    driver.find_element(By.XPATH, xpath_checkbox_button).click()
 
-                except common.exceptions.ElementNotVisibleException as e:
+                except common.exceptions.ElementNotVisibleException:
                     return self.AnswerState.NOT_VISIBLE
 
                 except common.exceptions.NoSuchElementException as e:
                     job.error = str(e)
+                    return self.AnswerState.CANNOT_ANSWER
 
-        return self.AnswerState.CANNOT_ANSWER
+            return self.AnswerState.CONTINUE
 
     def _answer_select(self, driver: webdriver.Chrome, job: Job, qle: QuestionLabelElements) -> Enum:
         select_name = qle.element_list[0].get_attribute(HTMLConstants.Attributes.NAME)

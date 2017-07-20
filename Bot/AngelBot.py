@@ -1,19 +1,20 @@
-from Bot.Robot import Robot, RobotConstants
-
-# Selenium Imports
-from selenium import webdriver, common
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from userconfig import UserConfig
 import json
-import peewee
-from models import Job
-
-from helpers import Const, sleep_before_function, does_element_exist
 import re
-from typing import Optional
 import time
+from typing import Optional
+
+import peewee
+
+from selenium import common
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+from Bot.Robot import Robot, RobotConstants
+from Shared.helpers import Const, sleep_before_function
+from Shared.selenium_helpers import does_element_exist, scroll_infinitely
+from Shared.models import Job
+from userconfig import UserConfig
 
 
 class AngelBot(Robot):
@@ -44,7 +45,9 @@ class AngelBot(Robot):
         WebDriverWait(self.driver, AngelConstants.PauseTime.JOBS_LOADED).until(
             EC.presence_of_element_located((By.XPATH, AngelConstants.XPath.JOB_LISTING_LINK))
         )
-        self._scroll_infinitely()
+
+        scroll_infinitely(self.driver)
+
         elements_list = self.driver.find_elements(By.XPATH, AngelConstants.XPath.JOB_LISTING_LINK)
         for element in elements_list:
             job_link = element.get_attribute('href')
@@ -87,7 +90,7 @@ class AngelBot(Robot):
 
             self.attempt_application(job)
 
-            if 'unpaid' in job.description:
+            if 'unpaid' in job.description.lower():
                 job.error = RobotConstants.String.UNPAID
                 self.failed_application(job)
 
@@ -173,16 +176,6 @@ class AngelBot(Robot):
             replace(':', '%3A'). \
             replace('[', '%5B'). \
             replace(']', '%5D')
-
-    def _scroll_infinitely(self):
-        last_height = self.driver.execute_script("return document.body.scrollHeight")
-        while True:
-            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(AngelConstants.PauseTime.SCROLL)
-            new_height = self.driver.execute_script("return document.body.scrollHeight")
-            if new_height == last_height:
-                break
-            last_height = new_height
 
 
 class AngelConstants(Const):

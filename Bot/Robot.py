@@ -1,9 +1,11 @@
 from abc import ABC
-from helpers import Const
-from models import Job, Question
-from selenium import webdriver
-from Application.ApplicationBuilder import ApplicationBuilder
 from datetime import datetime
+
+from selenium import webdriver
+
+from Application.ApplicationBuilder import ApplicationBuilder
+from Shared.helpers import Const
+from Shared.models import Job, Question, Person
 from userconfig import UserConfig
 
 
@@ -76,6 +78,7 @@ class Robot(ABC):
         # Create table if not exists
         Job.create_table(fail_silently=True)
         Question.create_table(fail_silently=True)
+        Person.create_table(fail_silently=True)
 
     def shut_down(self):
         self.driver.close()

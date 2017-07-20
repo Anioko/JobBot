@@ -1,12 +1,11 @@
 import json
 import typing
 
-import peewee
-
 from Application.constants import ApplicationBuilderConstants as ABCs
+from Shared.constants import HTMLConstants
+from Shared.helpers import tokenize_text, any_in
+from Shared.models import Blurb, Tag, Question, create_question_from_model
 from userconfig import UserConfig
-from models import Blurb, Tag, Question, create_question_from_model
-from helpers import tokenize_text, any_in
 
 
 class ApplicationBuilder:
@@ -51,7 +50,7 @@ class ApplicationBuilder:
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_CONTACT_INFO):
                 q_instance.question_type = ABCs.QuestionTypes.CONTACT_INFO
 
-            elif ABCs.QuestionNeedle.NAME_MULTI_ATTACH in q_instance.name:
+            elif q_instance.secondary_input_type == HTMLConstants.InputTypes.FILE:
                 q_instance.question_type = ABCs.QuestionTypes.ADDITONAL_ATTACHMENTS
             q_instance.save()
 

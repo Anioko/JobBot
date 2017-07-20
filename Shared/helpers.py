@@ -1,11 +1,8 @@
 import random
 import time
 from typing import Callable, List
+
 import nltk
-
-from selenium.webdriver.common.by import By
-from selenium import webdriver, common
-
 
 """
 Point of these two classes is to allow me to make a constant object dictionary.
@@ -65,24 +62,9 @@ def sleep_before_function(func: Callable, wait_time: float):
     return wrapper
 
 
-def does_element_exist(driver: webdriver, by_selector, identifier: str) -> bool:
-    """
-    Function that checks if a element exists on the page
-    :param driver: selenium.webdriver
-    :param by
-    :param identifier: either a ID attribute or an xPath
-    :return:
-    """
-    try:
-        driver.find_element(by_selector, identifier)
-        return True
-
-    except common.exceptions.NoSuchElementException:
-        return False
-
-
 def any_in(a: list, b: list) -> bool:
     return any(i in b for i in a)
+
 
 def tokenize_text(text:str) -> List[str]:
     tokens = nltk.word_tokenize(text)

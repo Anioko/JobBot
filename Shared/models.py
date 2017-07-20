@@ -1,6 +1,8 @@
 from typing import Optional
+
 from peewee import *
-from helpers import Const
+
+from Shared.helpers import Const
 
 db = SqliteDatabase('job_database.db')
 
@@ -47,22 +49,23 @@ class Question(BaseModel):
     A model for the questions on Indeed easy apply
     """
 
-    name = CharField(primary_key=True)
     website = CharField()
     input_type = CharField()
+    label = TextField()
 
-    label = TextField(null=True)
     tokens = TextField(null=True)
     answer = TextField(null=True)
     secondary_input_type = CharField(null=True)
     question_type = CharField(null=True)
     additional_info = TextField(null=True)
 
+    class Meta:
+        primary_key = CompositeKey('label', 'input_type')
+
 
 def create_question_from_model(q: Question) -> Optional[Question]:
     try:
         question = Question.create(
-            name=q.name,
             label=q.label,
             tokens=q.tokens,
             website=q.website,
@@ -112,3 +115,17 @@ class Tag(BaseModel):
     def __str__(self):
         return "{0} :: {1} :: {2}".format(self.id, self.blurb.id, self.text)
 
+# These class are for LinkedIn
+
+
+class Person(BaseModel):
+    relative_link = CharField(primary_key=True)
+    full_link = CharField()
+    name = CharField()
+    title = CharField()
+    position = CharField(null=True)
+    company = CharField(null=True)
+    location = CharField(null=True)
+
+    visited = BooleanField(default=False)
+    connected = BooleanField(default=False)

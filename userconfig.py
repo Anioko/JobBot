@@ -1,6 +1,6 @@
 import os
 
-from helpers import Const
+from Shared.helpers import Const
 
 
 class UserConfig(Const):
