@@ -39,7 +39,7 @@ class QuestionLabelElements(object):
         return self.question
 
     def add_more_information(self, driver: webdriver.Chrome):
-        string_additional_info: str = ''
+        string_additional_info = ''
         if (self.question.secondary_input_type == HTMLConstants.InputTypes.CHECK_BOX) or \
                 (self.question.secondary_input_type == HTMLConstants.InputTypes.RADIO):
             list_spans: List[FirefoxWebElement] = driver.find_elements(

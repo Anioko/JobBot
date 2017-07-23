@@ -81,7 +81,7 @@ class IndeedRobot(Robot):
             .select() \
             .where(
             (Job.website == IndeedConstants.WEBSITE_NAME) &
-            (Job.applied == False) &
+            (Job.attempted == False) &
             (Job.good_fit == True)) \
             .order_by(Job.posted_date.desc())
 
@@ -133,8 +133,10 @@ class IndeedRobot(Robot):
         job.save()
 
     def fill_application(self, job: Job):
-        self.driver.find_element(By.XPATH, IndeedConstants.XPath.DIFFERENT_RESUME).click()
+        if does_element_exist(self.driver, By.XPATH, IndeedConstants.XPath.DIFFERENT_RESUME):
+            self.driver.find_element(By.XPATH, IndeedConstants.XPath.DIFFERENT_RESUME).click()
         dict_qle = IndeedParser.get_dict_qle(self.driver)
+
         for key, qle in dict_qle.items():
             self.application_builder.add_question_to_database(qle.question)
 

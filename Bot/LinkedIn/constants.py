@@ -18,7 +18,7 @@ class LinkedInConstant(Const):
 
     class XPath(Const):
         NEWS_FEED = "//div[@class='feed-s-update__scroll']"
-        SEARCH_RESULTS_LIST = "//ul[@class='results-list']"
+        SEARCH_RESULTS_LIST = "//ul[contains(@class,'results-list')]"
         NEXT_BUTTON = "//button[@class='next']"
 
         @staticmethod

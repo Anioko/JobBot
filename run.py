@@ -45,7 +45,7 @@ if __name__ == "__main__":
         print(unformatted_display_query.format(q1))
 
         bot = IndeedRobot(UserConfig())
-        #bot.search_with_api(params=params)
+        bot.search_with_api(params=params)
         bot.login()
         bot.apply_jobs()
         bot.shut_down()

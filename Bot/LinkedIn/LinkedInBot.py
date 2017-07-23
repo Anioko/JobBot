@@ -14,7 +14,7 @@ from Bot.LinkedIn.constants import LinkedInConstant as LC
 from Bot.LinkedIn.LinkedInParser import LinkedInParser
 from userconfig import UserConfig
 from Shared.models import Person
-from Shared.selenium_helpers import scroll_infinitely, open_link_new_tab, scroll_gradually
+from Shared.selenium_helpers import scroll_infinitely, open_link_new_tab, scroll_gradually, adjust_zoom
 from Shared.helpers import sleep_after_function
 
 
@@ -39,7 +39,7 @@ class LinkedInBot(Robot):
     def search_people_by_query(self, query_string: str):
         full_url = LC.URL.HOST + \
                    LC.URL.SEARCH_PATH + \
-            '?' + query_string
+                   '?' + query_string
         self.driver.get(full_url)
         WebDriverWait(self.driver, LC.WaitTime.SEARCH).until(
             EC.presence_of_element_located((By.XPATH, LC.XPath.SEARCH_RESULTS_LIST))
@@ -48,6 +48,7 @@ class LinkedInBot(Robot):
         count_visits = 0
         while True:
             scroll_infinitely(self.driver)
+            adjust_zoom(self.driver, 50)
             list_persons = LinkedInParser.parse_result_page(self.driver)
 
             for person in list_persons:
@@ -58,7 +59,8 @@ class LinkedInBot(Robot):
                     count_visits += 1
 
             try:
-                self.driver.find_element(By.XPATH, LC.XPath.NEXT_BUTTON).click()
+                self.driver.find_element(By.XPATH, LC.XPath.NEXT_BUTTON).send_keys(Keys.ENTER)
+                adjust_zoom(self.driver, 200)
             except common.exceptions.NoSuchElementException as e:
                 break
 
@@ -95,5 +97,3 @@ class LinkedInBot(Robot):
 
         p.visited = True
         LC.String.person_visited(p)
-
-

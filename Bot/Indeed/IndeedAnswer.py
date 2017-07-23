@@ -32,7 +32,6 @@ class IndeedAnswer(object):
         names = list(dict_qle.keys())
         i = 0
         name = names[i]
-        state = self.AnswerState.CONTINUE
         list_continues: List[FirefoxWebElement] = driver.find_elements(By.XPATH, IndeedConstants.XPath.BUTTON_CONT)
 
         while True:
@@ -72,12 +71,9 @@ class IndeedAnswer(object):
     def _answer_question(self, driver: webdriver.Chrome, job: Job, qle: QuestionLabelElements):
         # Question should already be in database at this point with updated answer hopefully
         qle.question = Question.get(Question.label == qle.question.label, Question.input_type == qle.question.input_type)
-        if qle.question is not None:
-            if qle.question.question_type == ABCs.QuestionTypes.MESSAGE:
-                return self._answer_message(driver, job, qle)
-
-            elif qle.question.secondary_input_type == HTMLConstants.InputTypes.RADIO or \
-                qle.question.secondary_input_type == HTMLConstants.InputTypes.CHECK_BOX:
+        if qle.question.answer is not None:
+            if qle.question.secondary_input_type == HTMLConstants.InputTypes.RADIO or \
+            qle.question.secondary_input_type == HTMLConstants.InputTypes.CHECK_BOX:
                 return self._answer_check_button(driver, job, qle)
 
             elif qle.question.input_type == HTMLConstants.TagType.SELECT:
@@ -88,6 +84,9 @@ class IndeedAnswer(object):
 
             else:
                 return self._answer_text(driver, job, qle)
+        if qle.question is not None:
+            if qle.question.question_type == ABCs.QuestionTypes.MESSAGE:
+                return self._answer_message(driver, job, qle)
         else:
             job.error = RobotConstants.String.UNABLE_TO_ANSWER
 
@@ -148,8 +147,10 @@ class IndeedAnswer(object):
                 except common.exceptions.NoSuchElementException as e:
                     job.error = str(e)
                     return self.AnswerState.CANNOT_ANSWER
-
             return self.AnswerState.CONTINUE
+        # TODO: Check for prefilled answers
+        else:
+            raise NotImplementedError
 
     def _answer_select(self, driver: webdriver.Chrome, job: Job, qle: QuestionLabelElements) -> Enum:
         select_name = qle.element_list[0].get_attribute(HTMLConstants.Attributes.NAME)
