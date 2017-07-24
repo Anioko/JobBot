@@ -77,11 +77,12 @@ class IndeedRobot(Robot):
     def apply_jobs(self):
         count_attempts = 0
 
+        # TODO: Add a parameter to decide between "attemped = false" or "applied = false"
         jobs = Job \
             .select() \
             .where(
             (Job.website == IndeedConstants.WEBSITE_NAME) &
-            (Job.attempted == False) &
+            (Job.applied == False) &
             (Job.good_fit == True)) \
             .order_by(Job.posted_date.desc())
 

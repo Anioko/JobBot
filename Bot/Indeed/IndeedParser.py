@@ -82,7 +82,7 @@ class IndeedParser(object):
     @staticmethod
     def _get_job_from_result(job_result: dict) -> Optional[Job]:
         if job_result['indeedApply']:
-            parsed_date = datetime.strptime(job_result['date'], IndeedConstants.API.DATE_FORMAT)
+            parsed_date = datetime.strptime(job_result['date'], '%a, %d %b %Y %H:%M:%S %Z')
             job = Job(
                 key=job_result['jobkey'],
                 website=IndeedConstants.WEBSITE_NAME,

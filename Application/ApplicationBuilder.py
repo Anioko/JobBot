@@ -15,9 +15,14 @@ class ApplicationBuilder:
         Tag.create_table(fail_silently=True)
         self.user_config = user_config
 
-    # TODO: Implement a function that can decide which resume to send
-    def generate_resume(self, description):
-        raise NotImplementedError
+    # TODO: Change this function so that it uses keywords to make resume
+    def generate_resume(self, description) -> str:
+        """
+        Function that returns a resume path given a job description
+        :param description:
+        :return:
+        """
+        return self.user_config.DEFAULT_RESUME
 
     @staticmethod
     def add_question_to_database(q_object: Question):
@@ -52,6 +57,7 @@ class ApplicationBuilder:
 
             elif q_instance.secondary_input_type == HTMLConstants.InputTypes.FILE:
                 q_instance.question_type = ABCs.QuestionTypes.ADDITONAL_ATTACHMENTS
+
             q_instance.save()
 
         q = create_question_from_model(q_object)
@@ -99,6 +105,17 @@ class ApplicationBuilder:
             final_message = "{0}\n\n{1}\n{2}".format(blurb_intro.short_text, message_body, blurb_end.short_text)
 
         return final_message.replace(ABCs.COMPANY_PLACEHOLDER, company)
+
+    def find_question_with_answer(self, question: Question) -> Question:
+        questions = Question \
+            .select() \
+            .where(
+            (Question.website == question.website) &
+            Question.answer.is_null(False) &
+            (Question.question_type == question.question_type)
+        )
+        raise NotImplementedError
+        return question
 
     def pick_best_blurbs(self, job_description: str) -> typing.List[str]:
         key_words = tokenize_text(job_description)

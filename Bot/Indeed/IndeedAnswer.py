@@ -73,20 +73,24 @@ class IndeedAnswer(object):
         qle.question = Question.get(Question.label == qle.question.label, Question.input_type == qle.question.input_type)
         if qle.question.answer is not None:
             if qle.question.secondary_input_type == HTMLConstants.InputTypes.RADIO or \
-            qle.question.secondary_input_type == HTMLConstants.InputTypes.CHECK_BOX:
+                            qle.question.secondary_input_type == HTMLConstants.InputTypes.CHECK_BOX:
                 return self._answer_check_button(driver, job, qle)
 
             elif qle.question.input_type == HTMLConstants.TagType.SELECT:
                 return self._answer_select(driver, job, qle)
 
-            elif qle.question.question_type == ABCs.QuestionTypes.ADDITONAL_ATTACHMENTS:
-                return self.AnswerState.CONTINUE
-
             else:
                 return self._answer_text(driver, job, qle)
-        if qle.question is not None:
-            if qle.question.question_type == ABCs.QuestionTypes.MESSAGE:
-                return self._answer_message(driver, job, qle)
+
+        elif qle.question.question_type == ABCs.QuestionTypes.MESSAGE:
+            return self._answer_message(driver, job, qle)
+
+        elif qle.question.question_type == ABCs.QuestionTypes.ADDITONAL_ATTACHMENTS:
+            return self.AnswerState.CONTINUE
+
+        elif qle.question.question_type == ABCs.QuestionTypes.RESUME:
+            return self.ab_builder.generate_resume(job.description)
+
         else:
             job.error = RobotConstants.String.UNABLE_TO_ANSWER
 

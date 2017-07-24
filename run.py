@@ -37,7 +37,7 @@ if __name__ == "__main__":
             # 'jt':'internship',
             'fromage': '10',
             'language': 'en',
-            'co': 'us',
+            'co': 'ca',
             'userip': "1.2.3.4",
             'useragent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
         }

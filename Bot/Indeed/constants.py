@@ -9,7 +9,6 @@ class IndeedConstants(Const):
 
     # SEARCH STAGE
     class API(Const):
-        DATE_FORMAT =  '%a, %d %b %Y %H:%M:%S %Z'
         MAX_NUM_RESULTS_PER_REQUEST = 25
 
     # APPLICATION STAGE
