@@ -1,10 +1,10 @@
 import json
-import typing
+from typing import List, Optional
 
 from Application.constants import ApplicationBuilderConstants as ABCs
 from Shared.constants import HTMLConstants
 from Shared.helpers import tokenize_text, any_in
-from Shared.models import Blurb, Tag, Question, create_question_from_model
+from Shared.models import Blurb, Tag, Question, create_question_from_model, ModelConstants
 from userconfig import UserConfig
 
 
@@ -27,7 +27,8 @@ class ApplicationBuilder:
     @staticmethod
     def add_question_to_database(q_object: Question):
         def _categorize_question(q_instance: Question):
-            split_tokens = q_instance.tokens.split(',')
+            # TODO: Add gender and race category
+            split_tokens = q_instance.tokens.split(ModelConstants.DELIMITER)
             if len(split_tokens) > ABCs.QuestionNeedle.LENGTH_THRESHOLD_TOKENS:
                 q_instance.question_type = ABCs.QuestionTypes.LONG
 
@@ -37,7 +38,7 @@ class ApplicationBuilder:
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_MESSAGE):
                 q_instance.question_type = ABCs.QuestionTypes.MESSAGE
 
-            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_LOCATION):
+            elif any_in(q_instance.label.split(' '), ABCs.QuestionNeedle.NEEDLES_LOCATION):
                 q_instance.question_type = ABCs.QuestionTypes.LOCATION
 
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_EXPERIENCE):
@@ -64,7 +65,7 @@ class ApplicationBuilder:
         if q is not None:
             _categorize_question(q)
 
-    def generate_message(self, description: str, company: str) -> typing.Optional[str]:
+    def generate_message(self, description: str, company: str) -> Optional[str]:
         """
         Returns a generated message based on the job description and company
         If 'containMinBlurbs' == True, then return None if not enough tags are in description
@@ -106,18 +107,29 @@ class ApplicationBuilder:
 
         return final_message.replace(ABCs.COMPANY_PLACEHOLDER, company)
 
-    def find_question_with_answer(self, question: Question) -> Question:
-        questions = Question \
+    @staticmethod
+    def find_question_with_answer(question: Question) -> List[Question]:
+        target_tokens = set(question.tokens.split(ModelConstants.DELIMITER))
+
+        def question_similarity(q: Question) -> float:
+            current_tokens = set(q.tokens.split(ModelConstants.DELIMITER))
+            count_intersection = len(target_tokens.intersection(current_tokens))
+            count_difference = len(target_tokens.difference(current_tokens))
+            return count_intersection/(count_intersection+count_difference)
+
+        questions_with_answers = Question \
             .select() \
             .where(
-            (Question.website == question.website) &
-            Question.answer.is_null(False) &
-            (Question.question_type == question.question_type)
+                (Question.website == question.website) &
+                Question.answer.is_null(False) &
+                (Question.question_type == question.question_type)
         )
-        raise NotImplementedError
-        return question
 
-    def pick_best_blurbs(self, job_description: str) -> typing.List[str]:
+        sorted_questions = sorted(questions_with_answers, key=question_similarity, reverse=True)
+
+        return sorted_questions
+
+    def pick_best_blurbs(self, job_description: str) -> List[str]:
         key_words = tokenize_text(job_description)
 
         blurb_id_list = []

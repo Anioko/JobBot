@@ -31,6 +31,8 @@ class ApplicationBuilderConstants(Const):
         NEEDLES_CERTIFICATION = []
         NEEDLES_EDUCATION = ['education', 'completed']
         NEEDLES_CONTACT_INFO = ['name', 'email', 'phone', 'number']
+        NEEDLES_RACE = ['race','ethni']
+        NEEDLES_GENDER = ['gender','sex']
 
         NAME_MULTI_ATTACH = 'attachments'
         LENGTH_THRESHOLD_TOKENS = 20
@@ -45,6 +47,8 @@ class ApplicationBuilderConstants(Const):
         CONTACT_INFO = 'contact_info'
         LANGUAGE = 'language'
         EDUCATION = 'education'
+        GENDER = 'gender'
+        RACE = 'race'
         ADDITONAL_ATTACHMENTS = 'attachments'
         LONG = 'long'
 

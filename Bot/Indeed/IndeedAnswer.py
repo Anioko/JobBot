@@ -92,6 +92,7 @@ class IndeedAnswer(object):
             return self.ab_builder.generate_resume(job.description)
 
         else:
+            list_questions_with_answers: List[Question] = ApplicationBuilder.find_question_with_answer(qle.question)
             job.error = RobotConstants.String.UNABLE_TO_ANSWER
 
         return self.AnswerState.CANNOT_ANSWER
