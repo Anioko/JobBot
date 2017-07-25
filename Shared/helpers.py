@@ -67,7 +67,14 @@ def any_in(a: list, b: list) -> bool:
 
 
 def tokenize_text(text:str) -> List[str]:
+    text = text.replace('/',' ') # Pre-processing
     tokens = nltk.word_tokenize(text)
     tokens = set([word.lower() for word in tokens if word.isalpha()])
     tokens = [word for word in tokens if word not in nltk.corpus.stopwords.words('english')]
     return tokens
+
+
+def set_similarity(a: set, b: set) -> float:
+    count_intersection = len(a.intersection(b))
+    count_difference = len(a.difference(b))
+    return count_intersection / (count_intersection + count_difference)

@@ -26,6 +26,7 @@ class HTMLConstants(Const):
     class InputTypes(Const):
         RADIO = 'radio'
         TEXT = 'text'
+        PHONE = 'tel'
         EMAIL = 'email'
         FILE = 'file'
         TEXT_AREA = 'textarea'

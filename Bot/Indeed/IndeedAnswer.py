@@ -88,13 +88,35 @@ class IndeedAnswer(object):
         elif qle.question.question_type == ABCs.QuestionTypes.ADDITONAL_ATTACHMENTS:
             return self.AnswerState.CONTINUE
 
+        elif qle.question.question_type == ABCs.QuestionTypes.LOCATION:
+            # TODO: Add configurable constants
+            if 'vancouver' in str.lower(qle.question.label):
+                qle.question.answer = 'Yes'
+                return self._answer_text(driver, job, qle)
+
         elif qle.question.question_type == ABCs.QuestionTypes.RESUME:
-            return self.ab_builder.generate_resume(job.description)
+            qle.question.answer = self.ab_builder.generate_resume(job.description)
+            return self._answer_text(driver, job, qle)
+
+        elif qle.question.question_type == ABCs.QuestionTypes.EXPERIENCE:
+            qle.question.answer = self.user_config.Settings.DEFAULT_EXPERIENCE
+            return self._answer_text(driver, job, qle)
 
         else:
-            list_questions_with_answers: List[Question] = ApplicationBuilder.find_question_with_answer(qle.question)
-            job.error = RobotConstants.String.UNABLE_TO_ANSWER
+            best_answer = ApplicationBuilder.generate_answer_from_questions(qle.question)
+            if best_answer is not None:
+                qle.question.answer = best_answer
+                if qle.question.secondary_input_type == HTMLConstants.InputTypes.TEXT or \
+                        qle.question.secondary_input_type == HTMLConstants.InputTypes.FILE or \
+                        qle.question.secondary_input_type == HTMLConstants.InputTypes.EMAIL or \
+                        qle.question.secondary_input_type == HTMLConstants.InputTypes.PHONE:
+                    return self._answer_text(driver, job, qle)
+                elif qle.question.secondary_input_type == HTMLConstants.InputTypes.RADIO:
+                    return self._answer_check_button(driver, job, qle)
+                elif qle.question.secondary_input_type == HTMLConstants.InputTypes.SELECT_ONE:
+                    return self._answer_select(driver, job, qle)
 
+        job.error = RobotConstants.String.UNABLE_TO_ANSWER
         return self.AnswerState.CANNOT_ANSWER
 
     def _answer_message(self, driver: webdriver.Chrome, job: Job, qle: QuestionLabelElements) -> Enum:

@@ -1,9 +1,11 @@
 import json
 from typing import List, Optional
 
+from nltk.metrics.distance import edit_distance
+
 from Application.constants import ApplicationBuilderConstants as ABCs
 from Shared.constants import HTMLConstants
-from Shared.helpers import tokenize_text, any_in
+from Shared.helpers import tokenize_text, any_in, set_similarity
 from Shared.models import Blurb, Tag, Question, create_question_from_model, ModelConstants
 from userconfig import UserConfig
 
@@ -27,10 +29,15 @@ class ApplicationBuilder:
     @staticmethod
     def add_question_to_database(q_object: Question):
         def _categorize_question(q_instance: Question):
-            # TODO: Add gender and race category
             split_tokens = q_instance.tokens.split(ModelConstants.DELIMITER)
             if len(split_tokens) > ABCs.QuestionNeedle.LENGTH_THRESHOLD_TOKENS:
                 q_instance.question_type = ABCs.QuestionTypes.LONG
+
+            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_GENDER):
+                q_instance.question_type = ABCs.QuestionTypes.GENDER
+
+            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_RACE):
+                q_instance.question_type = ABCs.QuestionTypes.RACE
 
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_RESUME):
                 q_instance.question_type = ABCs.QuestionTypes.RESUME
@@ -108,14 +115,24 @@ class ApplicationBuilder:
         return final_message.replace(ABCs.COMPANY_PLACEHOLDER, company)
 
     @staticmethod
-    def find_question_with_answer(question: Question) -> List[Question]:
-        target_tokens = set(question.tokens.split(ModelConstants.DELIMITER))
+    def generate_answer_from_questions(question: Question) -> Optional[str]:
+        unknown_tokens = set(question.tokens.split(ModelConstants.DELIMITER))
 
         def question_similarity(q: Question) -> float:
             current_tokens = set(q.tokens.split(ModelConstants.DELIMITER))
-            count_intersection = len(target_tokens.intersection(current_tokens))
-            count_difference = len(target_tokens.difference(current_tokens))
-            return count_intersection/(count_intersection+count_difference)
+            return set_similarity(current_tokens, unknown_tokens)
+
+        def pick_best_answer(target_question: Question) -> str:
+            # TODO: Make delimeter constant
+            answers = question.additional_info.split('\n')
+            min_answer = None
+            min_score = float('inf')
+            for answer in answers:
+                score = edit_distance(answer, target_question.answer)
+                if score < min_score:
+                    min_answer = answer
+                    min_score = score
+            return min_answer
 
         questions_with_answers = Question \
             .select() \
@@ -125,9 +142,20 @@ class ApplicationBuilder:
                 (Question.question_type == question.question_type)
         )
 
-        sorted_questions = sorted(questions_with_answers, key=question_similarity, reverse=True)
+        sorted_questions: List[Question] = sorted(questions_with_answers, key=question_similarity, reverse=True)
 
-        return sorted_questions
+        best_answer = None
+        if question.secondary_input_type == HTMLConstants.InputTypes.TEXT or \
+                        question.secondary_input_type == HTMLConstants.InputTypes.FILE or \
+                        question.secondary_input_type == HTMLConstants.InputTypes.EMAIL or \
+                        question.secondary_input_type == HTMLConstants.InputTypes.PHONE:
+            best_answer = sorted_questions[0].answer
+
+        elif question.secondary_input_type == HTMLConstants.InputTypes.SELECT_ONE or \
+                question.secondary_input_type == HTMLConstants.InputTypes.RADIO:
+            best_answer = pick_best_answer(sorted_questions[0])
+
+        return best_answer
 
     def pick_best_blurbs(self, job_description: str) -> List[str]:
         key_words = tokenize_text(job_description)

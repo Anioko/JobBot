@@ -20,4 +20,4 @@ class UserConfig(Const):
         WILL_RELOAD_TAGS_AND_BLURBS = True
 
         MINIMUM_NUMBER_MATCHING_KEYWORDS = 1
-        DEFAULT_EXPERIENCE = None
+        DEFAULT_EXPERIENCE = 2
