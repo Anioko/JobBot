@@ -29,7 +29,7 @@ class QuestionLabelElements(object):
 
         self.question = Question(
             label=self.label,
-            tokens=ModelConstants.DELIMITER.join(tokenize_text(self.label)),
+            tokens=ModelConstants.TOKEN_DELIMITER.join(tokenize_text(self.label)),
             website=IndeedConstants.WEBSITE_NAME,
             input_type=first_element.tag_name,
             secondary_input_type=first_element.get_attribute(HTMLConstants.Attributes.TYPE)
@@ -40,8 +40,8 @@ class QuestionLabelElements(object):
 
     def add_more_information(self, driver: webdriver.Chrome):
         string_additional_info = ''
-        if (self.question.secondary_input_type == HTMLConstants.InputTypes.CHECK_BOX) or \
-                (self.question.secondary_input_type == HTMLConstants.InputTypes.RADIO):
+        if (self.question.input_type == HTMLConstants.InputTypes.CHECK_BOX) or \
+                (self.question.input_type == HTMLConstants.InputTypes.RADIO):
             list_spans: List[FirefoxWebElement] = driver.find_elements(
                 By.XPATH,
                 IndeedConstants.XPath.compute_xpath_radio_span(self.name)
@@ -54,7 +54,7 @@ class QuestionLabelElements(object):
                     span.get_attribute(HTMLConstants.Attributes.INNER_TEXT)
                 )
 
-        elif self.question.input_type == HTMLConstants.TagType.SELECT:
+        elif self.question.tag_type == HTMLConstants.TagType.SELECT:
             select = Select(driver.find_element(By.NAME, self.name))
             list_options: List[FirefoxWebElement] = select.options
             for option in list_options:
@@ -109,7 +109,7 @@ class IndeedParser(object):
         for element_input in q_element_inputs:
             element_name = element_input.get_attribute(HTMLConstants.Attributes.NAME)
 
-            if element_input.get_attribute('type') == HTMLConstants.InputTypes.HIDDEN:
+            if element_input.get_attribute(HTMLConstants.Attributes.TYPE) == HTMLConstants.InputTypes.HIDDEN:
                 pass
             else:
                 if dict_qle.get(element_name, None) is None:

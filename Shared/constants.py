@@ -33,5 +33,4 @@ class HTMLConstants(Const):
         HIDDEN = 'hidden'
         CHECK_BOX = 'checkbox'
         SELECT_ONE = 'select-one'
-        FILE = 'file'
 

@@ -8,7 +8,9 @@ db = SqliteDatabase('job_database.db')
 
 
 class ModelConstants(Const):
-    DELIMITER = ','
+    class DELIMITER(Const):
+        TOKEN = ','
+        ANSWER = '\n'
 
 
 class BaseModel(Model):
@@ -50,14 +52,15 @@ class Question(BaseModel):
     """
 
     website = CharField()
-    input_type = CharField()
+    tag_type = CharField()
     label = TextField()
 
     tokens = TextField(null=True)
     answer = TextField(null=True)
-    secondary_input_type = CharField(null=True)
-    question_type = CharField(null=True)
+    input_type = CharField(null=True)
+    question_category = CharField(null=True)
     additional_info = TextField(null=True)
+    best_guess = BooleanField(default=True)
 
     class Meta:
         primary_key = CompositeKey('label', 'input_type')
@@ -69,11 +72,12 @@ def create_question_from_model(q: Question) -> Optional[Question]:
             label=q.label,
             tokens=q.tokens,
             website=q.website,
+            tag_type=q.tag_type,
             input_type=q.input_type,
-            secondary_input_type=q.secondary_input_type,
             answer=q.answer,
-            question_type=q.question_type,
-            additional_info=q.additional_info
+            question_category=q.question_category,
+            additional_info=q.additional_info,
+            best_guess=q.best_guess
         )
         return question
 

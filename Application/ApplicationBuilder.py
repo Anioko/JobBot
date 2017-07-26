@@ -29,42 +29,42 @@ class ApplicationBuilder:
     @staticmethod
     def add_question_to_database(q_object: Question):
         def _categorize_question(q_instance: Question):
-            split_tokens = q_instance.tokens.split(ModelConstants.DELIMITER)
+            split_tokens = q_instance.tokens.split(ModelConstants.TOKEN_DELIMITER)
             if len(split_tokens) > ABCs.QuestionNeedle.LENGTH_THRESHOLD_TOKENS:
-                q_instance.question_type = ABCs.QuestionTypes.LONG
+                q_instance.question_category = ABCs.QuestionTypes.LONG
 
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_GENDER):
-                q_instance.question_type = ABCs.QuestionTypes.GENDER
+                q_instance.question_category = ABCs.QuestionTypes.GENDER
 
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_RACE):
-                q_instance.question_type = ABCs.QuestionTypes.RACE
+                q_instance.question_category = ABCs.QuestionTypes.RACE
 
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_RESUME):
-                q_instance.question_type = ABCs.QuestionTypes.RESUME
+                q_instance.question_category = ABCs.QuestionTypes.RESUME
 
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_MESSAGE):
-                q_instance.question_type = ABCs.QuestionTypes.MESSAGE
+                q_instance.question_category = ABCs.QuestionTypes.MESSAGE
 
             elif any_in(q_instance.label.split(' '), ABCs.QuestionNeedle.NEEDLES_LOCATION):
-                q_instance.question_type = ABCs.QuestionTypes.LOCATION
+                q_instance.question_category = ABCs.QuestionTypes.LOCATION
 
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_EXPERIENCE):
-                q_instance.question_type = ABCs.QuestionTypes.EXPERIENCE
+                q_instance.question_category = ABCs.QuestionTypes.EXPERIENCE
 
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_EDUCATION):
-                q_instance.question_type = ABCs.QuestionTypes.EDUCATION
+                q_instance.question_category = ABCs.QuestionTypes.EDUCATION
 
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_LANGUAGE):
-                q_instance.question_type = ABCs.QuestionTypes.LANGUAGE
+                q_instance.question_category = ABCs.QuestionTypes.LANGUAGE
 
             elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_CERTIFICATION):
-                q_instance.question_type = ABCs.QuestionTypes.CERTIFICATION
+                q_instance.question_category = ABCs.QuestionTypes.CERTIFICATION
 
-            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_CONTACT_INFO):
-                q_instance.question_type = ABCs.QuestionTypes.CONTACT_INFO
+            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_PERSONAL):
+                q_instance.question_category = ABCs.QuestionTypes.PERSONAL
 
-            elif q_instance.secondary_input_type == HTMLConstants.InputTypes.FILE:
-                q_instance.question_type = ABCs.QuestionTypes.ADDITONAL_ATTACHMENTS
+            elif q_instance.input_type == HTMLConstants.InputTypes.FILE:
+                q_instance.question_category = ABCs.QuestionTypes.ADDITIONAL_ATTACHMENTS
 
             q_instance.save()
 
@@ -116,10 +116,10 @@ class ApplicationBuilder:
 
     @staticmethod
     def generate_answer_from_questions(question: Question) -> Optional[str]:
-        unknown_tokens = set(question.tokens.split(ModelConstants.DELIMITER))
+        unknown_tokens = set(question.tokens.split(ModelConstants.TOKEN_DELIMITER))
 
         def question_similarity(q: Question) -> float:
-            current_tokens = set(q.tokens.split(ModelConstants.DELIMITER))
+            current_tokens = set(q.tokens.split(ModelConstants.TOKEN_DELIMITER))
             return set_similarity(current_tokens, unknown_tokens)
 
         def pick_best_answer(target_question: Question) -> str:
@@ -139,20 +139,21 @@ class ApplicationBuilder:
             .where(
                 (Question.website == question.website) &
                 Question.answer.is_null(False) &
-                (Question.question_type == question.question_type)
+                (Question.question_category == question.question_category)
         )
 
         sorted_questions: List[Question] = sorted(questions_with_answers, key=question_similarity, reverse=True)
 
         best_answer = None
-        if question.secondary_input_type == HTMLConstants.InputTypes.TEXT or \
-                        question.secondary_input_type == HTMLConstants.InputTypes.FILE or \
-                        question.secondary_input_type == HTMLConstants.InputTypes.EMAIL or \
-                        question.secondary_input_type == HTMLConstants.InputTypes.PHONE:
+        #TODO: Create a helper method
+        if question.input_type == HTMLConstants.InputTypes.TEXT or \
+                        question.input_type == HTMLConstants.InputTypes.FILE or \
+                        question.input_type == HTMLConstants.InputTypes.EMAIL or \
+                        question.input_type == HTMLConstants.InputTypes.PHONE:
             best_answer = sorted_questions[0].answer
 
-        elif question.secondary_input_type == HTMLConstants.InputTypes.SELECT_ONE or \
-                question.secondary_input_type == HTMLConstants.InputTypes.RADIO:
+        elif question.input_type == HTMLConstants.InputTypes.SELECT_ONE or \
+                question.input_type == HTMLConstants.InputTypes.RADIO:
             best_answer = pick_best_answer(sorted_questions[0])
 
         return best_answer

@@ -70,7 +70,7 @@ class IndeedAnswer(object):
 
     def _answer_question(self, driver: webdriver.Chrome, job: Job, qle: QuestionLabelElements):
         # Question should already be in database at this point with updated answer hopefully
-        qle.question = Question.get(Question.label == qle.question.label, Question.input_type == qle.question.input_type)
+        qle.question = Question.get(Question.label == qle.question.label, Question.tag_type == qle.question.input_type)
         if qle.question.answer is not None:
             if qle.question.secondary_input_type == HTMLConstants.InputTypes.RADIO or \
                             qle.question.secondary_input_type == HTMLConstants.InputTypes.CHECK_BOX:
@@ -85,7 +85,7 @@ class IndeedAnswer(object):
         elif qle.question.question_type == ABCs.QuestionTypes.MESSAGE:
             return self._answer_message(driver, job, qle)
 
-        elif qle.question.question_type == ABCs.QuestionTypes.ADDITONAL_ATTACHMENTS:
+        elif qle.question.question_type == ABCs.QuestionTypes.ADDITIONAL_ATTACHMENTS:
             return self.AnswerState.CONTINUE
 
         elif qle.question.question_type == ABCs.QuestionTypes.LOCATION:

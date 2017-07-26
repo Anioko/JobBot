@@ -1,4 +1,5 @@
 from Shared.helpers import Const
+from enum import Enum
 
 
 class ApplicationBuilderConstants(Const):
@@ -30,7 +31,8 @@ class ApplicationBuilderConstants(Const):
         NEEDLES_LANGUAGE = ['speak']
         NEEDLES_CERTIFICATION = []
         NEEDLES_EDUCATION = ['education', 'completed']
-        NEEDLES_CONTACT_INFO = ['name', 'email', 'phone', 'number']
+        NEEDLES_EMAIL = ['email']
+        NEEDLES_PERSONAL = ['name', 'phone', 'number']
         NEEDLES_RACE = ['race','ethni']
         NEEDLES_GENDER = ['gender','sex']
 
@@ -41,14 +43,18 @@ class ApplicationBuilderConstants(Const):
     class QuestionTypes(Const):
         RESUME = 'resume'
         MESSAGE = 'message'
+        EMAIL = 'email'
         LOCATION = 'location'
         EXPERIENCE = 'experience'
         CERTIFICATION = 'certification'
-        CONTACT_INFO = 'contact_info'
+        PERSONAL = 'personal'
         LANGUAGE = 'language'
         EDUCATION = 'education'
         GENDER = 'gender'
         RACE = 'race'
-        ADDITONAL_ATTACHMENTS = 'attachments'
+        ADDITIONAL_ATTACHMENTS = 'attachments'
         LONG = 'long'
 
+    class AnswerTypes(Enum):
+        SINGLE = 1
+        MULTIPLE = 2
