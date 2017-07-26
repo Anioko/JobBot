@@ -89,8 +89,7 @@ class IndeedAnswer(object):
             return self.AnswerState.CONTINUE
 
         elif qle.question.question_type == ABCs.QuestionTypes.LOCATION:
-            # TODO: Add configurable constants
-            if 'vancouver' in str.lower(qle.question.label):
+            if self.user_config.Default.CITY in str.lower(qle.question.label):
                 qle.question.answer = 'Yes'
                 return self._answer_text(driver, job, qle)
 

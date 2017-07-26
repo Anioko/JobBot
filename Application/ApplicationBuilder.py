@@ -5,7 +5,7 @@ from nltk.metrics.distance import edit_distance
 
 from Application.constants import ApplicationBuilderConstants as ABCs
 from Shared.constants import HTMLConstants
-from Shared.helpers import tokenize_text, any_in, set_similarity
+from Shared.helpers import tokenize_text, any_in, set_similarity, has_single_answer
 from Shared.models import Blurb, Tag, Question, create_question_from_model, ModelConstants
 from userconfig import UserConfig
 
@@ -33,38 +33,45 @@ class ApplicationBuilder:
             if len(split_tokens) > ABCs.QuestionNeedle.LENGTH_THRESHOLD_TOKENS:
                 q_instance.question_category = ABCs.QuestionTypes.LONG
 
-            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_GENDER):
-                q_instance.question_category = ABCs.QuestionTypes.GENDER
+            else:
+                if any_in(split_tokens, ABCs.QuestionNeedle.KEYWORDS_EMAIL):
+                    q_instance.question_category = ABCs.QuestionTypes.EMAIL
 
-            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_RACE):
-                q_instance.question_category = ABCs.QuestionTypes.RACE
+                elif any_in(split_tokens, ABCs.QuestionNeedle.KEYWORDS_GENDER):
+                    q_instance.question_category = ABCs.QuestionTypes.GENDER
 
-            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_RESUME):
-                q_instance.question_category = ABCs.QuestionTypes.RESUME
+                elif any_in(split_tokens, ABCs.QuestionNeedle.KEYWORDS_RACE):
+                    q_instance.question_category = ABCs.QuestionTypes.RACE
 
-            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_MESSAGE):
-                q_instance.question_category = ABCs.QuestionTypes.MESSAGE
+                elif any_in(split_tokens, ABCs.QuestionNeedle.KEYWORDS_RESUME):
+                    q_instance.question_category = ABCs.QuestionTypes.RESUME
 
-            elif any_in(q_instance.label.split(' '), ABCs.QuestionNeedle.NEEDLES_LOCATION):
-                q_instance.question_category = ABCs.QuestionTypes.LOCATION
+                elif any_in(split_tokens, ABCs.QuestionNeedle.KEYWORDS_MESSAGE):
+                    q_instance.question_category = ABCs.QuestionTypes.MESSAGE
 
-            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_EXPERIENCE):
-                q_instance.question_category = ABCs.QuestionTypes.EXPERIENCE
+                elif any_in(q_instance.label.split(' '), ABCs.QuestionNeedle.KEYWORDS_LOCATION):
+                    q_instance.question_category = ABCs.QuestionTypes.LOCATION
 
-            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_EDUCATION):
-                q_instance.question_category = ABCs.QuestionTypes.EDUCATION
+                elif any_in(split_tokens, ABCs.QuestionNeedle.KEYWORDS_EXPERIENCE):
+                    q_instance.question_category = ABCs.QuestionTypes.EXPERIENCE
 
-            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_LANGUAGE):
-                q_instance.question_category = ABCs.QuestionTypes.LANGUAGE
+                elif any_in(split_tokens, ABCs.QuestionNeedle.KEYWORDS_EDUCATION):
+                    q_instance.question_category = ABCs.QuestionTypes.EDUCATION
 
-            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_CERTIFICATION):
-                q_instance.question_category = ABCs.QuestionTypes.CERTIFICATION
+                elif any_in(split_tokens, ABCs.QuestionNeedle.KEYWORDS_LANGUAGE):
+                    q_instance.question_category = ABCs.QuestionTypes.LANGUAGE
 
-            elif any_in(split_tokens, ABCs.QuestionNeedle.NEEDLES_PERSONAL):
-                q_instance.question_category = ABCs.QuestionTypes.PERSONAL
+                elif any_in(split_tokens, ABCs.QuestionNeedle.KEYWORDS_CERTIFICATION):
+                    q_instance.question_category = ABCs.QuestionTypes.CERTIFICATION
 
-            elif q_instance.input_type == HTMLConstants.InputTypes.FILE:
-                q_instance.question_category = ABCs.QuestionTypes.ADDITIONAL_ATTACHMENTS
+                elif any_in(split_tokens, ABCs.QuestionNeedle.KEYWORDS_PERSONAL):
+                    q_instance.question_category = ABCs.QuestionTypes.PERSONAL
+
+                elif q_instance.input_type == HTMLConstants.InputTypes.FILE:
+                    q_instance.question_category = ABCs.QuestionTypes.ADDITIONAL_ATTACHMENTS
+
+                if any_in(split_tokens, ABCs.QuestionNeedle.KEYWORDS_OPTIONAL):
+                    q_instance.optional = True
 
             q_instance.save()
 
@@ -123,8 +130,7 @@ class ApplicationBuilder:
             return set_similarity(current_tokens, unknown_tokens)
 
         def pick_best_answer(target_question: Question) -> str:
-            # TODO: Make delimeter constant
-            answers = question.additional_info.split('\n')
+            answers = question.additional_info.split(ModelConstants.DELIMITER.ANSWER)
             min_answer = None
             min_score = float('inf')
             for answer in answers:
@@ -144,17 +150,14 @@ class ApplicationBuilder:
 
         sorted_questions: List[Question] = sorted(questions_with_answers, key=question_similarity, reverse=True)
 
-        best_answer = None
-        #TODO: Create a helper method
-        if question.input_type == HTMLConstants.InputTypes.TEXT or \
-                        question.input_type == HTMLConstants.InputTypes.FILE or \
-                        question.input_type == HTMLConstants.InputTypes.EMAIL or \
-                        question.input_type == HTMLConstants.InputTypes.PHONE:
-            best_answer = sorted_questions[0].answer
-
-        elif question.input_type == HTMLConstants.InputTypes.SELECT_ONE or \
-                question.input_type == HTMLConstants.InputTypes.RADIO:
-            best_answer = pick_best_answer(sorted_questions[0])
+        if has_single_answer(question.input_type):
+            if question.input_type == HTMLConstants.InputTypes.SELECT_ONE or \
+                    question.input_type == HTMLConstants.InputTypes.RADIO:
+                best_answer = pick_best_answer(sorted_questions[0])
+            else:
+                best_answer = sorted_questions[0].answer
+        else:
+            raise NotImplementedError
 
         return best_answer
 

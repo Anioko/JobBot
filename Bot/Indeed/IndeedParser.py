@@ -50,16 +50,18 @@ class QuestionLabelElements(object):
             assert len(list_spans) == len(self.element_list)
 
             for i, span in enumerate(list_spans):
-                string_additional_info += '{0}\n'.format(
-                    span.get_attribute(HTMLConstants.Attributes.INNER_TEXT)
+                string_additional_info += '{0}{1}'.format(
+                    span.get_attribute(HTMLConstants.Attributes.INNER_TEXT),
+                    ModelConstants.DELIMITER.ANSWER
                 )
 
         elif self.question.tag_type == HTMLConstants.TagType.SELECT:
             select = Select(driver.find_element(By.NAME, self.name))
             list_options: List[FirefoxWebElement] = select.options
             for option in list_options:
-                string_additional_info += '{0}\n'.format(
-                    option.get_attribute(HTMLConstants.Attributes.INNER_TEXT)
+                string_additional_info += '{0}{1}'.format(
+                    option.get_attribute(HTMLConstants.Attributes.INNER_TEXT),
+                    ModelConstants.DELIMITER.ANSWER
                 )
 
         self.question.additional_info = string_additional_info

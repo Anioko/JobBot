@@ -24,17 +24,19 @@ class ApplicationBuilderConstants(Const):
         """
         Constants used to determine which question type the question is
         """
-        NEEDLES_RESUME = ['resume']
-        NEEDLES_MESSAGE = ['cover', 'letter']
-        NEEDLES_LOCATION = ['located']
-        NEEDLES_EXPERIENCE = ['experience']
-        NEEDLES_LANGUAGE = ['speak']
-        NEEDLES_CERTIFICATION = []
-        NEEDLES_EDUCATION = ['education', 'completed']
-        NEEDLES_EMAIL = ['email']
-        NEEDLES_PERSONAL = ['name', 'phone', 'number']
-        NEEDLES_RACE = ['race','ethni']
-        NEEDLES_GENDER = ['gender','sex']
+        KEYWORDS_RESUME = ['resume']
+        KEYWORDS_MESSAGE = ['cover', 'letter']
+        KEYWORDS_LOCATION = ['located']
+        KEYWORDS_EXPERIENCE = ['experience']
+        KEYWORDS_LANGUAGE = ['speak']
+        KEYWORDS_CERTIFICATION = []
+        KEYWORDS_EDUCATION = ['education', 'completed']
+        KEYWORDS_EMAIL = ['email']
+        KEYWORDS_PERSONAL = ['name', 'phone', 'number']
+        KEYWORDS_RACE = ['race', 'ethni']
+        KEYWORDS_GENDER = ['gender', 'sex']
+
+        KEYWORDS_OPTIONAL = ['optional']
 
         NAME_MULTI_ATTACH = 'attachments'
         LENGTH_THRESHOLD_TOKENS = 20

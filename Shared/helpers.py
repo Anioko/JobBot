@@ -4,6 +4,7 @@ from typing import Callable, List
 
 import nltk
 
+from Shared.constants import HTMLConstants
 """
 Point of these two classes is to allow me to make a constant object dictionary.
 Acts somewhat similar to a String Enum or a object in Javascript
@@ -40,7 +41,6 @@ def _parametrized(dec):
     return layer
 
 
-# TODO: Maybe add parameter for how random delta amount
 @_parametrized
 def sleep_after_function(func: Callable, wait_time: float):
     def wrapper(*args, **kwargs):
@@ -67,7 +67,7 @@ def any_in(a: list, b: list) -> bool:
 
 
 def tokenize_text(text:str) -> List[str]:
-    text = text.replace('/',' ') # Pre-processing
+    text = text.replace('/',' ')  # Pre-processing
     tokens = nltk.word_tokenize(text)
     tokens = set([word.lower() for word in tokens if word.isalpha()])
     tokens = [word for word in tokens if word not in nltk.corpus.stopwords.words('english')]
@@ -78,3 +78,18 @@ def set_similarity(a: set, b: set) -> float:
     count_intersection = len(a.intersection(b))
     count_difference = len(a.difference(b))
     return count_intersection / (count_intersection + count_difference)
+
+
+def has_single_answer(input_type: str) -> bool:
+    """
+    Helper to determine whether the input has a single selectable answer
+    :param input_type:
+    :return:
+    """
+    if input_type == HTMLConstants.InputTypes.TEXT or \
+                    input_type == HTMLConstants.InputTypes.FILE or \
+                    input_type == HTMLConstants.InputTypes.EMAIL or \
+                    input_type == HTMLConstants.InputTypes.PHONE:
+        return True
+    else:
+        return False

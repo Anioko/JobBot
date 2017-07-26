@@ -61,6 +61,7 @@ class Question(BaseModel):
     question_category = CharField(null=True)
     additional_info = TextField(null=True)
     best_guess = BooleanField(default=True)
+    optional = BooleanField(default=False)
 
     class Meta:
         primary_key = CompositeKey('label', 'input_type')
